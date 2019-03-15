@@ -24,7 +24,7 @@ systemd利用Linux 内核CGroup特性来跟踪任务。当停止服务时，通�
 
 （1）sysVinit启动程序流程
 
-![65f9009ef38681e7840688a0ec9c475d.png](evernotecid://3BC095D4-F869-4723-811B-0229DF2E29A6/appyinxiangcom/20922558/ENResource/p78)
+![image.png](0)
 
 （2）Upstart启动程序流程
 ![203a3b8e99e8eafac454499dab596fa1.png](evernotecid://3BC095D4-F869-4723-811B-0229DF2E29A6/appyinxiangcom/20922558/ENResource/p79)

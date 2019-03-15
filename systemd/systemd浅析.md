@@ -11,7 +11,7 @@ init系统的重要特性是负责跟踪和管理服务进程的生命周期。
 需求：
 （1）服务通常在后台运行，进程派生时，如何找到真正的进程。
 如下图，如果我们想kill掉p1进程，如果我们没有找到真正的p1进程，那么这个服务就失去控制。
-![d6ab3371d19cc764f61273d43db31c45.png](evernotecid://3BC095D4-F869-4723-811B-0229DF2E29A6/appyinxiangcom/20922558/ENResource/p77)
+![image.png](3)
 
 （2）删除父进程时，如果删掉所有的子进程
 如果一个CGI程序派生两次，从而脱离了和Apache的斧子关系，若果我们kill掉Apache进程，CGI进程任然继续在运行。
@@ -24,13 +24,13 @@ systemd利用Linux 内核CGroup特性来跟踪任务。当停止服务时，通�
 
 （1）sysVinit启动程序流程
 
-![image.png](0)
+![image.png](2)
 
 （2）Upstart启动程序流程
-![203a3b8e99e8eafac454499dab596fa1.png](evernotecid://3BC095D4-F869-4723-811B-0229DF2E29A6/appyinxiangcom/20922558/ENResource/p79)
+![image.png](4)
 
 （3）systemd启动程序流程
-![08e0e1be1c3e9ad6c87f0282d541976c.png](evernotecid://3BC095D4-F869-4723-811B-0229DF2E29A6/appyinxiangcom/20922558/ENResource/p80)
+![image.png](5)
 
 以上，我们可以看到，不管各个程序之间有没有依赖，systemd都支持并行启动。并且支持按需启动进程，不是像sysVinit一样默认启动所有程序。
 

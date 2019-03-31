@@ -28,7 +28,7 @@ systemd利用Linux 内核CGroup特性来跟踪任务。当停止服务时，通�
 
 
 （2）Upstart启动程序流程
-![image.png](0)
+![image.png](https://github.com/xiaoluwwwxiaolu/study/blob/master/systemd/1.png)
 
 （3）systemd启动程序流程
 ![image.png](5)

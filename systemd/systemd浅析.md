@@ -24,8 +24,8 @@ systemd利用Linux 内核CGroup特性来跟踪任务。当停止服务时，通�
 
 （1）sysVinit启动程序流程
 
-![1.png](http://github.com/your_name/your_repository/raw/master/images_folder/img.jpg
-)
+![1.png](http://github.com/your_name/your_repository/raw/master/images_folder/1.png)
+https://github.com/xiaoluwwwxiaolu/study/edit/master/systemd/systemd%E6%B5%85%E6%9E%90.md
 
 
 （2）Upstart启动程序流程

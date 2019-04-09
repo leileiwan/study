@@ -1,5 +1,6 @@
-一、版本
+# 一、版本
 
+```
 OS:centos7.4
 Prometheus：prometheus-2.8.1.linux-amd64
 AlertManager：alertmanager-0.16.2.linux-amd64
@@ -10,11 +11,12 @@ Python：2.7.5
 python库：prometheus_client,Flask
 	pip install prometheus_client
 	pip install  Flask
+```
 
 
 
 
-二、部署服务端
+# 二、部署服务端
 条件：保证网络正常（关闭本地防火墙，OpenStack安全组等）
 ip：10.5.9.184
 文件：Prometheus，AlertManager，Grafana

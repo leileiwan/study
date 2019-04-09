@@ -58,7 +58,8 @@ ansible-playbook -i ansible/hosts.server  ansible/playbook_server.yml
 在10.5.9.184执行
 (1)prometheus
 
-(当前路径 /root)
+
+cd /root
 tar -zxvf prometheus-2.8.1.linux-amd64.tar.gz -C /usr/local/
 cd /usr/local
 mv prometheus-2.8.1.linux-amd64/ prometheus
@@ -67,7 +68,7 @@ sudo systemctl start prometheus.service
 
 (2)alertmanager
 
-(当前路径 /root)
+cd /root
 tar -xzvf alertmanager-0.16.2.linux-amd64.tar.gz -C /usr/local/
 cd /usr/local
 mv alertmanager-0.16.2.linux-amd64/ alertmanager
@@ -76,6 +77,8 @@ sudo systemctl start alertmanager.service
 
 (3)grafana
 
+cd /root
+sudo yum localinstall grafana-5.0.4-1.x86_64.rpm(所有y)
 
 
 

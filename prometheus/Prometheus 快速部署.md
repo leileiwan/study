@@ -218,7 +218,40 @@ http://confluence.sensetime.com/pages/viewpage.action?pageId=50055555
 ```
 (3)添加报警规则
 
+```
+- name: lustre_client
+  rules:
+  - alert: over_lock_count
+    expr: lock_count > 100000
+    for: 30s
+    labels:
+      cluster: lustre 
+    annotations:
+      summary: "{{$labels.name}}'s lock_count num is over"
+      description: "{{$labels.labels}}'s lock_count num is {{$value}}"
 
+
+  - alert: over_lru_size
+    expr: lru_size != 100000
+    for: 30s
+    labels:
+      cluster: lustre 
+    annotations:
+      summary: "{{$labels.name}}'s lru_size num is over"
+      description: "{{$labels.labels}}'s lru_size num is {{$value}}"
+
+
+  - alert: over_lru_max_age
+    expr: lru_max_age != 10000
+    for: 30s
+    labels:
+      cluster: lustre 
+    annotations:
+      summary: "{{$labels.name}}'s lru_max_age num is over"
+      description: "{{$labels.labels}}'s lru_max_age num is {{$value}}"
+
+```
+(4)
 
 
 

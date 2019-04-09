@@ -22,7 +22,8 @@ ip：10.5.9.184
 	ssh-copy-id root@IP
 	输入密码
 2、编写配置文件
-（1）host.server,prometheus主机ip
+（1）host.server
+prometheus主机ip
 path：prometheus_deployment/ansible/hosts.server 
 ```
 [server]

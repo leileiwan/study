@@ -208,6 +208,7 @@ http://confluence.sensetime.com/pages/viewpage.action?pageId=50055555
   - 10.5.8.187:9108
 ```
 
+（2）在prometheus.yml文件中添加监控项配置
 
 
 

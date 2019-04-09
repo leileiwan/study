@@ -16,4 +16,11 @@ python库：prometheus_client,Flask
 ip：10.5.9.184
 文件：Prometheus，AlertManager，Grafana
 
+1、免密 ssh登录
+管理节点执行
+	ssh-keygen
+	ssh-copy-id IP
+	输入密码
+
+
 

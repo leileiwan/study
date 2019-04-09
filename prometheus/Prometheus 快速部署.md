@@ -56,8 +56,8 @@ ansible-playbook -i ansible/hosts.server  ansible/playbook_server.yml
 
 5、启动服务
 (1)prometheus
-tar -zxvf prometheus-2.8.1.linux-amd64.tar.gz -C /usr/local/
-mv -r /usr/local/prometheus-2.8.1.linux-amd64 /usr/local/
+mv prometheus-2.8.1.linux-amd64.tar.gz prometheus.tar.gz
+tar -zxvf prometheus.tar.gz -C /usr/local/
 sudo systemctl restart prometheus.service 
 sudo systemctl start prometheus.service 
 

@@ -251,7 +251,10 @@ http://confluence.sensetime.com/pages/viewpage.action?pageId=50055555
       description: "{{$labels.labels}}'s lru_max_age num is {{$value}}"
 
 ```
-(4)
+(4)根据报警规则，邮件发送给谁决定是否修改alertmanager.yml
+
+(5)重新加载配置文件
+
 
 
 

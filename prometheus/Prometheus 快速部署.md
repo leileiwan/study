@@ -63,6 +63,10 @@ mv prometheus-2.8.1.linux-amd64/ prometheus
 sudo systemctl stop prometheus.service 
 sudo systemctl start prometheus.service 
 
+(2)alertmanager
+ 
+
+
 
 
 

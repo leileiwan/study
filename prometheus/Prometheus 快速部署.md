@@ -219,6 +219,8 @@ http://confluence.sensetime.com/pages/viewpage.action?pageId=50055555
 (3)添加报警规则
 
 ```
+groups:
+
 - name: lustre_client
   rules:
   - alert: over_lock_count

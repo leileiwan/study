@@ -7,5 +7,5 @@ Grafana：grafana-5.0.4-1.x86_64
 
 GO：go1.11.4-linux-amd64
 Python：2.7.5
-python 
+python库：
 

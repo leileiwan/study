@@ -29,7 +29,20 @@ path：prometheus_deployment/ansible/hosts.server
 10.5.9.184
 ```
 
-(2)
+(2) playbook_server.yml
+path:prometheus_deployment/ansible/playbook_server.yml
+```
+#copy file to client
+- hosts: server
+  remote_user: root
+  tasks:
+  - name: copy prometheus file to server
+    copy: src=/root/prometheus_deployment/pkg/prometheus-2.8.1.linux-amd64.tar.gz  dest=/root
+  - name: copy grafana  file to server
+    copy: src=/root/prometheus_deployment/pkg/grafana-5.0.4-1.x86_64.rpm dest=/root
+  - name: copy alertmanager  file to server
+    copy: src=/root/prometheus_deployment/pkg/alertmanager-0.16.2.linux-amd64.tar.gz  dest=/root
+```
 
 
 

@@ -55,6 +55,7 @@ ansible-playbook -i ansible/hosts.server  ansible/playbook_server.yml
 4、检查主机文件是否存在
 
 5、启动服务
+在10.5.9.184执行
 (1)prometheus
 
 (当前路径 /root)

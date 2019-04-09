@@ -21,7 +21,12 @@ ip：10.5.9.184
 	ssh-keygen
 	ssh-copy-id root@IP
 	输入密码
-2、编写配置
+2、编写配置文件
+（1）host.server
+```
+[server]
+10.5.9.184
+```
 
 
 

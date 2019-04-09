@@ -57,8 +57,7 @@ ansible-playbook -i ansible/hosts.server  ansible/playbook_server.yml
 5、启动服务
 在10.5.9.184执行
 (1)prometheus
-
-
+```
 cd /root
 tar -zxvf prometheus-2.8.1.linux-amd64.tar.gz -C /usr/local/
 cd /usr/local
@@ -66,9 +65,12 @@ mv prometheus-2.8.1.linux-amd64/ prometheus
 systemctl enable prometheus.service 
 sudo systemctl stop prometheus.service 
 sudo systemctl start prometheus.service 
+```
+
+
 
 (2)alertmanager
-
+```
 cd /root
 tar -xzvf alertmanager-0.16.2.linux-amd64.tar.gz -C /usr/local/
 cd /usr/local
@@ -76,15 +78,15 @@ mv alertmanager-0.16.2.linux-amd64/ alertmanager
 systemctl enable alertmanager.service
 sudo systemctl stop alertmanager.service
 sudo systemctl start alertmanager.service
-
+```
 (3)grafana
-
+```
 cd /root
 sudo yum localinstall grafana-5.0.4-1.x86_64.rpm(所有y)
 systemctl enable grafana-server.service
 systemctl stop grafana-server.service
 systemctl start grafana-server.service
-
+```
 6、编写配置文件
 
 (1)prometheus.yml
@@ -146,7 +148,7 @@ receivers:
     email_configs:
       - to: 'xiaoluwwwxiaolu@163.com'
       - to: 'zhanghequan@sensetime.com'
- 
+```
 
 
 

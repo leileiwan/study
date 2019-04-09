@@ -9,5 +9,7 @@ GO：go1.11.4-linux-amd64
 Python：2.7.5
 python库：prometheus_client,Flask
 	pip install prometheus_client
-pip install  Flask
+	pip install  Flask
 
+
+二

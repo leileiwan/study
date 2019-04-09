@@ -85,7 +85,8 @@ systemctl enable grafana-server.service
 systemctl stop grafana-server.service
 systemctl start grafana-server.service
 
-6、
+6、编写配置文件
+
 
 
 

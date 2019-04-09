@@ -190,9 +190,14 @@ http://confluence.sensetime.com/pages/viewpage.action?pageId=50055555
     copy: src=/root/prometheus_deployment/systemd/lustre_client_exporter.service  dest=/usr/lib/systemd/system/ mode=744
   - name: ensure lustre-client-exporter service  is running (and enable it at boot)
     service: name=lustre_client_exporter state=restarted enabled=yes
+```
+3、执行ansible部署命令
 
+```
+ ansible-playbook -i ansible/hosts.client ansible/playbook_client.yml
+```
 
-
+4、
 
 
 

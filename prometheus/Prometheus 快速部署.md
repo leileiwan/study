@@ -117,29 +117,11 @@ cd /root
 tar -xzvf alertmanager-0.16.2.linux-amd64.tar.gz -C /usr/local/
 cd /usr/local
 mv alertmanager-0.16.2.linux-amd64/ alertmanager
+vim
+
 ```
 
-
-
-重启服务
-```
-systemctl enable alertmanager.service
-sudo systemctl stop alertmanager.service
-sudo systemctl start alertmanager.service
-```
-(3)grafana
-```
-cd /root
-sudo yum localinstall grafana-5.0.4-1.x86_64.rpm(所有y)
-systemctl enable grafana-server.service
-systemctl stop grafana-server.service
-systemctl start grafana-server.service
-```
-6、编写配置文件
-
-(1)
-
-(3)alertmanager.yml
+修改配置文件alertmanager.yml
 ```
 global:
   resolve_timeout: 5m
@@ -163,6 +145,22 @@ receivers:
       - to: 'xiaoluwwwxiaolu@163.com'
       - to: 'zhanghequan@sensetime.com'
 ```
+
+重启服务
+```
+systemctl enable alertmanager.service
+sudo systemctl stop alertmanager.service
+sudo systemctl start alertmanager.service
+```
+(3)grafana
+```
+cd /root
+sudo yum localinstall grafana-5.0.4-1.x86_64.rpm(所有y)
+systemctl enable grafana-server.service
+systemctl stop grafana-server.service
+systemctl start grafana-server.service
+```
+
 
 
 

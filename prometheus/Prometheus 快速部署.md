@@ -261,7 +261,7 @@ groups:
 curl -X POST http://10.5.8.184:9090/-/reload
 
 (6)在Grafana添加新的画布展示信息
-可以通过拷贝JSON形式,注意修改ip
+可以通过拷贝JSON形式,注意修改ip和DataSource
 
 
 

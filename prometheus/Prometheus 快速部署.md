@@ -161,7 +161,7 @@ systemctl stop grafana-server.service
 systemctl start grafana-server.service
 ```
 
-6、Grafana 同步数据源并
+6、Grafana 同步数据源并添加画布展示
 http://confluence.sensetime.com/pages/viewpage.action?pageId=50055555
 
 

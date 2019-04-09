@@ -58,7 +58,7 @@ ansible-playbook -i ansible/hosts.server  ansible/playbook_server.yml
 在10.5.9.184执行
 (1)prometheus
 
-
+解压
 ```
 cd /root
 tar -zxvf prometheus-2.8.1.linux-amd64.tar.gz -C /usr/local/
@@ -66,10 +66,12 @@ cd /usr/local
 mv prometheus-2.8.1.linux-amd64/ prometheus
 cd prometheus
 ```
+
 修改prometheus.yml 配置文件
 
 
 
+启动服务
 ```
 systemctl enable prometheus.service 
 sudo systemctl stop prometheus.service 

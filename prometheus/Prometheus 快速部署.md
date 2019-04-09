@@ -50,6 +50,11 @@ path:prometheus_deployment/ansible/playbook_server.yml
 ```
 
 3、执行部署脚本
+ansible-playbook -i ansible/hosts.server  ansible/playbook_server.yml 
+
+4、检查主机文件是否存在
+
+5、
 
 
 

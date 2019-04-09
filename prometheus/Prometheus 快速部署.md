@@ -63,7 +63,7 @@ cd /root
 tar -zxvf prometheus-2.8.1.linux-amd64.tar.gz -C /usr/local/
 cd /usr/local
 mv prometheus-2.8.1.linux-amd64/ prometheus
-
+systemctl enable prometheus.service 
 sudo systemctl stop prometheus.service 
 sudo systemctl start prometheus.service 
 
@@ -73,6 +73,7 @@ cd /root
 tar -xzvf alertmanager-0.16.2.linux-amd64.tar.gz -C /usr/local/
 cd /usr/local
 mv alertmanager-0.16.2.linux-amd64/ alertmanager
+systemctl enable alertmanager.service
 sudo systemctl stop alertmanager.service
 sudo systemctl start alertmanager.service
 

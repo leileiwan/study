@@ -49,7 +49,7 @@ path:prometheus_deployment/ansible/playbook_server.yml
     copy: src=/root/prometheus_deployment/pkg/alertmanager-0.16.2.linux-amd64.tar.gz  dest=/root
 ```
 
-
+3、执行部署脚本
 
 
 

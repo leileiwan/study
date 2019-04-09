@@ -56,8 +56,9 @@ ansible-playbook -i ansible/hosts.server  ansible/playbook_server.yml
 
 5、执行解压shell
 ```
-
+# prometheus
 tar -zxvf prometheus-2.8.1.linux-amd64.tar.gz -C /usr/local/
+
 ```
 
 

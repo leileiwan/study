@@ -162,6 +162,10 @@ systemctl start grafana-server.service
 ```
 
 
+6、Grafana 同步数据源
+
+
+
 
 
 

@@ -57,12 +57,20 @@ ansible-playbook -i ansible/hosts.server  ansible/playbook_server.yml
 5、修改配置文件并启动服务
 在10.5.9.184执行
 (1)prometheus
+
+
 ```
 cd /root
 tar -zxvf prometheus-2.8.1.linux-amd64.tar.gz -C /usr/local/
 cd /usr/local
 mv prometheus-2.8.1.linux-amd64/ prometheus
-cd prometh
+cd prometheus
+```
+修改prometheus.yml 配置文件
+
+
+
+```
 systemctl enable prometheus.service 
 sudo systemctl stop prometheus.service 
 sudo systemctl start prometheus.service 

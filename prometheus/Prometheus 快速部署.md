@@ -82,7 +82,10 @@ sudo systemctl start alertmanager.service
 cd /root
 sudo yum localinstall grafana-5.0.4-1.x86_64.rpm(所有y)
 systemctl enable grafana-server.service
+systemctl stop grafana-server.service
 systemctl start grafana-server.service
+
+6、
 
 
 

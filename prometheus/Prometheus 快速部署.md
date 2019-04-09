@@ -63,6 +63,7 @@ cd /root
 tar -zxvf prometheus-2.8.1.linux-amd64.tar.gz -C /usr/local/
 cd /usr/local
 mv prometheus-2.8.1.linux-amd64/ prometheus
+
 sudo systemctl stop prometheus.service 
 sudo systemctl start prometheus.service 
 
@@ -79,6 +80,8 @@ sudo systemctl start alertmanager.service
 
 cd /root
 sudo yum localinstall grafana-5.0.4-1.x86_64.rpm(所有y)
+systemctl enable grafana-server.service
+systemctl start grafana-server.service
 
 
 

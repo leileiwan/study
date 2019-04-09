@@ -54,7 +54,7 @@ ansible-playbook -i ansible/hosts.server  ansible/playbook_server.yml
 
 4、检查主机文件是否存在
 
-5、
+5、执行
 
 
 

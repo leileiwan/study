@@ -67,8 +67,9 @@ sudo systemctl start prometheus.service
 (2)alertmanager
 
 (当前路径 /root)
+tar -xzvf alertmanager-0.16.2.linux-amd64.tar.gz -C /usr/local/
+cd /usr/local
 
- 
 
 
 

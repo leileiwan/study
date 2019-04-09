@@ -73,6 +73,8 @@ mv alertmanager-0.16.2.linux-amd64/ alertmanager
 sudo systemctl stop alertmanager.service
 sudo systemctl start alertmanager.service
 
+(3)g
+
 
 
 

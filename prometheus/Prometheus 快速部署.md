@@ -110,11 +110,19 @@ sudo systemctl start prometheus.service
 
 
 (2)alertmanager
+
+解压缩
 ```
 cd /root
 tar -xzvf alertmanager-0.16.2.linux-amd64.tar.gz -C /usr/local/
 cd /usr/local
 mv alertmanager-0.16.2.linux-amd64/ alertmanager
+```
+
+
+
+重启服务
+```
 systemctl enable alertmanager.service
 sudo systemctl stop alertmanager.service
 sudo systemctl start alertmanager.service

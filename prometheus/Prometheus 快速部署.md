@@ -209,6 +209,15 @@ http://confluence.sensetime.com/pages/viewpage.action?pageId=50055555
 ```
 
 （2）在prometheus.yml文件中添加监控项
+```
+- job_name: 'BJ-IDC1-10-5-8-cluster-lustre-lustre-client'
+    scrape_interval: 6h
+    file_sd_configs: 
+      - files:
+        - prometheus-BJ-IDC1-10-5-8-cluster-lustre-lustre-client.yml
+```
+(3)添加报警规则
+
 
 
 

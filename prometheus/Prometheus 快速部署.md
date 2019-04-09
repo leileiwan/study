@@ -199,6 +199,14 @@ http://confluence.sensetime.com/pages/viewpage.action?pageId=50055555
 
 4、修改Prometheus service 配置文件
 
+(1)创建 prometheus-BJ-IDC1-10-5-8-cluster-lustre-lustre-client.yml并添加一下内容
+```
+- labels:
+    group: 10-5-8-cluster-lustre-clutre-client
+    instance: 10.5.8.187
+  targets:
+  - 10.5.8.187:9108
+```
 
 
 

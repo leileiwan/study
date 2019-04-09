@@ -58,7 +58,7 @@ ansible-playbook -i ansible/hosts.server  ansible/playbook_server.yml
 (1)prometheus
 mv prometheus-2.8.1.linux-amd64.tar.gz prometheus.tar.gz
 tar -zxvf prometheus.tar.gz -C /usr/local/
-sudo systemctl restart prometheus.service 
+sudo systemctl stop prometheus.service 
 sudo systemctl start prometheus.service 
 
 

@@ -23,6 +23,7 @@ ip：10.5.9.184
 	输入密码
 2、编写配置文件
 （1）host.server
+path：prometheus_deployment/ansible/hosts.server 
 ```
 [server]
 10.5.9.184

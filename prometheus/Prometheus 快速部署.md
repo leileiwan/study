@@ -266,7 +266,9 @@ curl -X POST http://10.5.8.184:9090/-/reload
 
 # 四、资源文件
 
-
+主机 10.5.8.196
+账户:root/Sensetime!1
+资源文件:
 
 
 

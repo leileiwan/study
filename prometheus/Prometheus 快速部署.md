@@ -19,8 +19,9 @@ ip：10.5.9.184
 1、免密 ssh登录
 管理节点执行
 	ssh-keygen
-	ssh-copy-id IP
+	ssh-copy-id root@IP
 	输入密码
+
 
 
 

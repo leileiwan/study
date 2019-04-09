@@ -50,7 +50,9 @@ path:prometheus_deployment/ansible/playbook_server.yml
 ```
 
 3、执行部署脚本
-ansible-playbook -i ansible/hosts.server  ansible/playbook_server.yml 
+```
+ansible-playbook -i ansible/hosts.server  ansible/playbook_server.yml
+``` 
 
 4、检查主机文件是否存在
 
@@ -163,6 +165,12 @@ systemctl start grafana-server.service
 
 6、Grafana 同步数据源并添加画布展示
 http://confluence.sensetime.com/pages/viewpage.action?pageId=50055555
+
+
+
+三、部署Exporter
+
+
 
 
 

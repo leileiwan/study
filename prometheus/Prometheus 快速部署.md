@@ -170,6 +170,8 @@ http://confluence.sensetime.com/pages/viewpage.action?pageId=50055555
 
 三、部署Exporter
 
+1、设置免密，参照上面
+
 
 
 

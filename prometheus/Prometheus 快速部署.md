@@ -58,6 +58,7 @@ ansible-playbook -i ansible/hosts.server  ansible/playbook_server.yml
 (1)prometheus
 tar -zxvf prometheus-2.8.1.linux-amd64.tar.gz -C /usr/local/
 mv /usr/local/prometheus-2.8.1.linux-amd64.tar.gz /usr/local/prometheus
+sudo systemctl st
 
 
 

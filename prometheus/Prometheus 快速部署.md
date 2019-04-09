@@ -197,7 +197,7 @@ http://confluence.sensetime.com/pages/viewpage.action?pageId=50055555
  ansible-playbook -i ansible/hosts.client ansible/playbook_client.yml
 ```
 
-4、
+4、修改Prometheus 
 
 
 

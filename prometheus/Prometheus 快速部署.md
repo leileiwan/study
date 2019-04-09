@@ -172,6 +172,11 @@ http://confluence.sensetime.com/pages/viewpage.action?pageId=50055555
 
 1、设置免密，参照上面
 
+2、编写host.client文件
+```
+
+```
+
 
 
 

@@ -21,12 +21,12 @@ python库：prometheus_client,Flask
 ip：10.5.9.184
 文件：Prometheus，AlertManager，Grafana
 
-1、免密 ssh登录
+## 1、免密 ssh登录
 管理节点执行
 	ssh-keygen
 	ssh-copy-id root@IP
 	输入密码
-2、编写配置文件
+## 2、编写配置文件
 （1）host.server
 prometheus主机ip
 path：prometheus_deployment/ansible/hosts.server 
@@ -51,14 +51,14 @@ path:prometheus_deployment/ansible/playbook_server.yml
     copy: src=/root/prometheus_deployment/pkg/alertmanager-0.16.2.linux-amd64.tar.gz  dest=/root
 ```
 
-3、执行部署脚本
+## 3、执行部署脚本
 ```
 ansible-playbook -i ansible/hosts.server  ansible/playbook_server.yml
 ``` 
 
-4、检查主机文件是否存在
+## 4、检查主机文件是否存在
 
-5、修改配置文件并启动服务
+## 5、修改配置文件并启动服务
 在10.5.9.184执行
 (1)prometheus
 
@@ -165,22 +165,22 @@ systemctl stop grafana-server.service
 systemctl start grafana-server.service
 ```
 
-6、Grafana 同步数据源并添加画布展示
+## 6、Grafana 同步数据源并添加画布展示
 http://confluence.sensetime.com/pages/viewpage.action?pageId=50055555
 
 
 
-三、部署Exporter
+# 三、部署Exporter
 
-1、设置免密，参照上面
+## 1、设置免密，参照上面
 
-2、编写host.client文件
+## 2、编写host.client文件
 ```
 [lustre_client_exporter_services]
 10.5.8.187
 ```
 
-3、编写playbook_client.yml
+## 3、编写playbook_client.yml
 ```
 #copy file to client
 - hosts: lustre_client_exporter_services

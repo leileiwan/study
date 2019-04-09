@@ -31,6 +31,7 @@ path：prometheus_deployment/ansible/hosts.server
 ```
 
 (2) playbook_server.yml
+copy部署文件，本地文件路径
 path:prometheus_deployment/ansible/playbook_server.yml
 ```
 #copy file to client
@@ -44,6 +45,7 @@ path:prometheus_deployment/ansible/playbook_server.yml
   - name: copy alertmanager  file to server
     copy: src=/root/prometheus_deployment/pkg/alertmanager-0.16.2.linux-amd64.tar.gz  dest=/root
 ```
+
 
 
 

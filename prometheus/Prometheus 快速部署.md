@@ -174,8 +174,23 @@ http://confluence.sensetime.com/pages/viewpage.action?pageId=50055555
 
 2、编写host.client文件
 ```
-
+[lustre_client_exporter_services]
+10.5.8.187
 ```
+
+3、编写playbook_client.yml
+```
+#copy file to client
+- hosts: lustre_client_exporter_services
+  remote_user: root
+  tasks:
+  - name: copy lustre-client-exporter file to client
+    copy: src=/root/prometheus_deployment/exporter/lustre_client_exporter.py dest=/usr/sbin/ mode=744
+  - name: copy lustre-client-exporter service file to client
+    copy: src=/root/prometheus_deployment/systemd/lustre_client_exporter.service  dest=/usr/lib/systemd/system/ mode=744
+  - name: ensure lustre-client-exporter service  is running (and enable it at boot)
+    service: name=lustre_client_exporter state=restarted enabled=yes
+
 
 
 

@@ -11,10 +11,11 @@ python库：prometheus_client,Flask
 	pip install prometheus_client
 	pip install  Flask
 
-条件：保证网络正常（关闭本地防火墙，OpenStack安全组等）
+
 
 
 二、部署服务端
+条件：保证网络正常（关闭本地防火墙，OpenStack安全组等）
 ip：10.5.9.184
 文件：Prometheus，AlertManager，Grafana
 
@@ -47,6 +48,8 @@ path:prometheus_deployment/ansible/playbook_server.yml
   - name: copy alertmanager  file to server
     copy: src=/root/prometheus_deployment/pkg/alertmanager-0.16.2.linux-amd64.tar.gz  dest=/root
 ```
+
+
 
 
 

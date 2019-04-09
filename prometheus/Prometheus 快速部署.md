@@ -193,13 +193,13 @@ http://confluence.sensetime.com/pages/viewpage.action?pageId=50055555
   - name: ensure lustre-client-exporter service  is running (and enable it at boot)
     service: name=lustre_client_exporter state=restarted enabled=yes
 ```
-3、执行ansible部署命令
+## 4、执行ansible部署命令
 
 ```
  ansible-playbook -i ansible/hosts.client ansible/playbook_client.yml
 ```
 
-4、修改Prometheus service 配置文件
+## 5、修改Prometheus service 配置文件
 
 (1)创建 prometheus-BJ-IDC1-10-5-8-cluster-lustre-lustre-client.yml并添加一下内容
 ```
@@ -261,7 +261,7 @@ groups:
 curl -X POST http://10.5.8.184:9090/-/reload
 
 (6)在Grafana添加新的画布展示信息
-可以通过拷贝JSON形式
+可以通过拷贝JSON形式,注意修改ip
 
 
 

@@ -132,10 +132,6 @@ global:
   smtp_auth_password: "root123"
   smtp_require_tls: false
 
-
-
-
-
 route:
   group_by: ['lustre_client']
   group_wait: 10s

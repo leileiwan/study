@@ -54,12 +54,10 @@ ansible-playbook -i ansible/hosts.server  ansible/playbook_server.yml
 
 4、检查主机文件是否存在
 
-5、执行解压shell
-```
-# prometheus
+5、启动服务
+(1)prometheus
 tar -zxvf prometheus-2.8.1.linux-amd64.tar.gz -C /usr/local/
-
-```
+mv /u
 
 
 

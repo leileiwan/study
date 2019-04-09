@@ -13,3 +13,7 @@ python库：prometheus_client,Flask
 
 
 二、部署服务端
+ip：10.5.9.184
+文件：Prometheus，AlertManager，Grafana
+
+

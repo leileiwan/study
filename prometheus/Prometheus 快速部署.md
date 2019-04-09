@@ -86,6 +86,7 @@ systemctl stop grafana-server.service
 systemctl start grafana-server.service
 
 6、编写配置文件
+
 (1)prometheus.yml
 ```
 # My global config/
@@ -107,11 +108,18 @@ scrape_configs:
   - job_name: 'prometheus'
     scrape_interval: 30s
     static_configs:
-      - targets: ['10.5.8.196:9090']
+      - targets: ['10.5.9.184:9090']
         labels:
           instance: prometheus
 
 ```
+
+(2)rules.yml
+```
+空
+```
+
+(3)
 
 
 

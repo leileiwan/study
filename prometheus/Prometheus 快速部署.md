@@ -119,7 +119,34 @@ scrape_configs:
 空
 ```
 
-(3)
+(3)alertmanager.yml
+```
+global:
+  resolve_timeout: 5m
+  
+  smtp_from: "wanlei19@163.com"
+  smtp_smarthost: "smtp.163.com:25"
+  smtp_auth_username: "wanlei19@163.com"
+  smtp_auth_password: "root123"
+  smtp_require_tls: false
+
+
+
+
+
+route:
+  group_by: ['lustre_client']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 6h
+  receiver: '163_email'
+
+receivers:
+  - name: '163_email'
+    email_configs:
+      - to: 'xiaoluwwwxiaolu@163.com'
+      - to: 'zhanghequan@sensetime.com'
+ 
 
 
 

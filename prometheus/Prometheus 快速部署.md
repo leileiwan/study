@@ -256,7 +256,8 @@ http://confluence.sensetime.com/pages/viewpage.action?pageId=50055555
 (5)重新加载配置文件
 curl -X POST http://10.5.8.184:9090/-/reload
 
-(6)在Grafana添加新的
+(6)在Grafana添加新的画布展示信息
+可以通过拷贝JSON形式
 
 
 

@@ -264,6 +264,11 @@ curl -X POST http://10.5.8.184:9090/-/reload
 可以通过拷贝JSON形式,注意修改ip和DataSource
 
 
+# 四、资源文件
+
+
+
+
 
 
 

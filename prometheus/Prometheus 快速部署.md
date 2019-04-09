@@ -11,6 +11,8 @@ python库：prometheus_client,Flask
 	pip install prometheus_client
 	pip install  Flask
 
+条件：保证网络正常（关闭本地防火墙，OpenStack安全组等）
+
 
 二、部署服务端
 ip：10.5.9.184
@@ -31,7 +33,7 @@ path：prometheus_deployment/ansible/hosts.server
 ```
 
 (2) playbook_server.yml
-copy部署文件，本地文件路径
+copy部署文件，本地文件路径需要正确
 path:prometheus_deployment/ansible/playbook_server.yml
 ```
 #copy file to client

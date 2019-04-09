@@ -117,7 +117,7 @@ cd /root
 tar -xzvf alertmanager-0.16.2.linux-amd64.tar.gz -C /usr/local/
 cd /usr/local
 mv alertmanager-0.16.2.linux-amd64/ alertmanager
-vim
+vim alertmanager.yml
 
 ```
 

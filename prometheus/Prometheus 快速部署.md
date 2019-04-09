@@ -86,7 +86,32 @@ systemctl stop grafana-server.service
 systemctl start grafana-server.service
 
 6、编写配置文件
+(1)prometheus.yml
+```
+# My global config/
+global:
+  scrape_interval:     10s # By default, scrape targets every 30 seconds.
+  evaluation_interval: 10s
+  external_labels:
+    monitor: 'platformon-monitor'
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+      - targets: ["10.5.9.184:9093"]
+#Alert rule
+rule_files:
+  - /usr/local/prometheus/rules.yml
+#Prometheus scrape_configs
+scrape_configs:
+  - job_name: 'prometheus'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['10.5.8.196:9090']
+        labels:
+          instance: prometheus
 
+```
 
 
 

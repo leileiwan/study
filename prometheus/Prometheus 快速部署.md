@@ -7,5 +7,7 @@ Grafana：grafana-5.0.4-1.x86_64
 
 GO：go1.11.4-linux-amd64
 Python：2.7.5
-python库：
+python库：prometheus_client,Flask
+	pip install prometheus_client
+pip install  Flask
 

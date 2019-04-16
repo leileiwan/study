@@ -58,3 +58,7 @@ ssh-copy-id 10.5.9.199
 # 机器配置
 ulimit -SHn 65535
 
+
+
+kubeadm join 10.5.9.200:16443 --token vujv8g.ziib8sm4e8alqun2 --discovery-token-ca-cert-hash sha256:af11198182598d1c3d8ab7db2f8c857067bcdcb2c826fee44dd1407af4f260fd
+

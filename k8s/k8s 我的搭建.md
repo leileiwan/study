@@ -43,3 +43,9 @@ scp -r config/$HOST1/kubeadm-config.yaml $HOST1:/root/
 scp -r config/$HOST2/kubeadm-config.yaml $HOST2:/root/
 scp -r config/$HOST3/kubeadm-config.yaml $HOST3:/root/
 ```
+
+
+
+
+
+# 步骤

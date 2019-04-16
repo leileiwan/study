@@ -54,3 +54,7 @@ ssh-keygen
 ssh-copy-id 10.5.9.184
 ssh-copy-id 10.5.9.192
 ssh-copy-id 10.5.9.199
+
+# 机器配置
+ulimit -SHn 65535
+

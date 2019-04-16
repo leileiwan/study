@@ -33,7 +33,7 @@ gpgkey=http://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg
 
 注意多了一个 kubernetes-cni-0.6.*，这是我们依赖的旧版本
 ```
-yum install -y kubelet-1.11.6* kubeadm-1.11.6* kubectl-1.11.6* kubernetes-cni-0.6.*
+yum install -y kubelet-1.11.1* kubeadm-1.11.1* kubectl-1.11.1* kubernetes-cni-0.6.*
 ```
 
 

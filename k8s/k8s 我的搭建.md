@@ -31,7 +31,15 @@ gpgkey=http://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg
 
 (2) 安装k8s 工具
 
-注意多了一个 kubernetes-cni-0.6.*，这是我们依赖的旧版本包
+注意多了一个 kubernetes-cni-0.6.*，这是我们依赖的旧版本
 ```
 yum install -y kubelet-1.11.6* kubeadm-1.11.6* kubectl-1.11.6* kubernetes-cni-0.6.*
+```
+
+
+
+```
+scp -r config/$HOST1/kubeadm-config.yaml $HOST1:/root/
+scp -r config/$HOST2/kubeadm-config.yaml $HOST2:/root/
+scp -r config/$HOST3/kubeadm-config.yaml $HOST3:/root/
 ```

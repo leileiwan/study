@@ -48,4 +48,9 @@ scp -r config/$HOST3/kubeadm-config.yaml $HOST3:/root/
 
 
 
-# 三台master机器
+# 三台master机器免密登录
+
+ssh-keygen
+ssh-copy-id 10.5.9.184
+ssh-copy-id 10.5.9.192
+ssh-copy-id 10.5.9.199

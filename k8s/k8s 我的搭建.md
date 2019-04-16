@@ -48,4 +48,4 @@ scp -r config/$HOST3/kubeadm-config.yaml $HOST3:/root/
 
 
 
-# 步骤
+# 三台master机器

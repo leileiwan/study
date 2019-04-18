@@ -64,3 +64,6 @@ kubeadm join 10.5.9.200:16443 --token vujv8g.ziib8sm4e8alqun2 --discovery-token-
 
 
  docker  pull zhenyuyang/hyperkube-v1.7.6_coreos.0
+
+
+安装制定docker问题

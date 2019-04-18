@@ -67,3 +67,4 @@ kubeadm join 10.5.9.200:16443 --token vujv8g.ziib8sm4e8alqun2 --discovery-token-
 
 
 安装制定docker问题
+https://blog.csdn.net/CSDN_duomaomao/article/details/78997138

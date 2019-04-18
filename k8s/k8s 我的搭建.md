@@ -70,4 +70,4 @@ kubeadm join 10.5.9.200:16443 --token vujv8g.ziib8sm4e8alqun2 --discovery-token-
 https://blog.csdn.net/CSDN_duomaomao/article/details/78997138
 
 
- kubeadm join 10.5.9.200:16443 --token d3c0r1.ygm5erm2d6rwp1vi --discovery-token-ca-cert-hash sha256:a633726269e0b6eef2d9549ad123f6190fae0edda59d7e6db9b9c8afe567749d
+  kubeadm join 10.5.9.200:16443 --token i2fkrq.svjvaun81td6352c --discovery-token-ca-cert-hash sha256:e1f4d422ececbdf5eb0ab5ab902a5e699466a4692d64aa39720d1496c7825544

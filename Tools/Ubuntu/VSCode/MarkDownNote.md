@@ -23,4 +23,10 @@ Auto-Git: Stop // Stops the interval and routine
 Auto-Git: Restart // Reloads configuration + Stop + Start
 ```
 
+# 2. Paste image
+* apt-get install xclip
+* install Paste image
+* "ctrl+alt+v" paste image(tip:ctrl+shift+p->paste image)
+
+
 

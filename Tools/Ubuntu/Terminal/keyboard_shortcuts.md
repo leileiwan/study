@@ -10,3 +10,10 @@
             字体设置成monospace bload 11号
             背景颜色设置成：
     ```
+
+
+# 3. 使用
+
+## 3.1 快捷键
+
+* ctrl+shift+up(down、left,right)拖动窗口变大变小

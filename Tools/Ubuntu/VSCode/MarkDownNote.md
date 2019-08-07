@@ -28,5 +28,16 @@ Auto-Git: Restart // Reloads configuration + Stop + Start
 * install Paste image
 * "ctrl+alt+v" paste image(tip:ctrl+shift+p->paste image)
 
+## 2.1 设置Markdown存储images路径
+```
+    "pasteImage.path": "${currentFileDir}/images/",
+    "pasteImage.forceUnixStyleSeparator": true,
+    "pasteImage.prefix": "./",
+    "pasteImage.insertPattern": "![${imageFileName}](${imageFilePath}${imageSyntaxSuffix}",
+```
+但是在Ubuntu中，没有发现setting json入口，因此本人只通过修改窗口中赋值对应的值。
+
+file->preferences->settings->extensions->Paste Image
+![2019-08-06-15-53-41.png](./images/2019-08-06-15-53-41.png)
 
 

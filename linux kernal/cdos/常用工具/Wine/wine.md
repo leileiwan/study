@@ -717,3 +717,43 @@ static int receive_fd( obj_handle_t *handle )
     server_abort_thread(0);
 }
 ```
+* 每个进程的“打开文件表”的主体是个指针数组,每个表项的下标就是“打开文件号”。如果一个表项代表着一个已打开文件、即一个读/写文件的上下文,这个指针就指向一个 struct file 数据结构。
+* 所谓 sendmsg()把对某个已打开文件的访问授权发送过来,实际上就是把这个指针(放在报文的头部作为控制信息)发送了过来。
+* 而 rcvmsg(),在接收报文中别的信息(如果有的话)的同时,负责在本进程的“打开文件表”中找到一个空闲的表项,然后把传过来的指针“安装”在这个位置上,并将其下标通过 msghdr、更确切地说是 msghdr.msg_control、传给用户空间。
+
+这样,当客户进程以后使用这个打开文件号来访问目标文件时,内核根据这个指针找到的就是服务进程使用的那个struct file 数据结构(一进入内核,就不存在进程间的边界了)。这也解释了为什么要通过 Unix 域的 Socket 传送这种授权,因为Unix 域 Socket 是用于本机的。而若是网络 Socket,则两个进程不在同一机器上,当然就不能通过指针指到对方的机器上去。
+
+下面的事情很有意思。接着调用的是 store_cached_fd()。顾名思义,这是要建
+立一个从 Handle 到打开文件号的便查表,所以说是“缓存的(cached)”。那么这个
+便查表在那里呢?初一想应该是在客户进程这一边、即客户进程的用户空间,要不
+怎么说是“缓存”呢?我们看看这个函数的代码。
+
+[WriteFile() > NtWriteFile() > wine_server_handle_to_fd() > store_cached_fd()]
+inline static int store_cached_fd( int *fd, obj_handle_t handle )
+{
+    int ret;
+    SERVER_START_REQ( set_handle_info )
+    {
+        req->handle = handle;
+        req->flags = 0;
+        req->mask = 0;
+        req->fd
+        = *fd;
+        if (!(ret = wine_server_call( req )))
+        {
+            if (reply->cur_fd != *fd)
+            {
+                /* someone was here before us */
+                close( *fd );
+                *fd = reply->cur_fd;
+            }
+            }else{
+                close( *fd );
+                *fd = -1;
+            }
+    }
+    SERVER_END_REQ;
+    return ret;
+}
+* 毫无疑问,这是“缓存”在服务进程那一边
+事实上,这个“缓存的”对照表就是前面服务进程那一头通过 get_handle_unix_fd()查找过程中用到的一些数据结构。这也是为什么如果不是第一次访问,服务进程就能找到从<进程,Handle>到目标文件在客户进程中的已打开文件号的映射的原因。在客户进程调用 store_cached_fd()之前,服务进程虽然通过 Socket 向客户进程授权,却无从知道其到达客户进程一边以后被安装在哪一个打开文件号上。现在,通过向服务进程登记,服务进程一边就建立起了这种映射。以后每当客户进程要访问这个文件时,就再通过wine_server_handle_to_fd()查询,就像上面看到的那样;只是那时已经不是第一次,因此就不用那么费事了(不过仍是跨进程的查询)。

@@ -373,3 +373,25 @@ static int file_flush( struct fd *fd, struct event **event )
 
 完成了所要求的服务以后,程序依次返回到 call_req_handler()中,并在那里调
 用 send_reply():
+* call_req_handler 是wine服务程序一部分，需要见上一小姐
+```
+[main_loop() > fd_poll_event() > thread_poll_event() > read_request()
+> call_req_handler() > send_reply()]
+/* send a reply to the current thread */
+static void send_reply( union generic_reply *reply )
+{
+    int ret;
+    if (!current->reply_size)
+    {
+        if ((ret = write( get_unix_fd( current->reply_fd ),
+         reply, sizeof(*reply) )) != sizeof(*reply)) goto error;
+    }
+    ......
+}
+```
+* 于是,Linux 内核将睡眠中的 Windows 应用进程唤醒,并调度其运行,控制又回到了 Windows 应用进程的手里。
+* 显然,凡代码中出现 SERVER_START_REQ 的代码一定是在客户端,而出现DECL_HANDLER 的代码一定是在服务端。
+
+
+可以看到，文件从刷操作是在Wine服务段执行的，为什么不直接使用动态链接库将Windows文件句柄转换成Linux文件号显得简单明了。这里有作者无可奈何地方，后面有讲解。
+

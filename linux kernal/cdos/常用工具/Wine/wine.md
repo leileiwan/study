@@ -505,3 +505,101 @@ IN ULONG Options);
     * wine以牺牲效率为代价死守核外补补策略，导致用户不愿意使用wine。
 
 
+# 4. Wine 的文件读写
+
+* wine中通过文件服务来实现不同进程之间文件复制。如果不适用任何措施，会有两次缓冲区拷贝，一次是将请求和缓冲区拷贝到内核，一次是将内核数据拷贝到用户区。Linux通过copy_from_user()和copy_to_user()两种方式实现。
+
+* 但是Wine采用了一种比较巧妙方法。通过socket实现文件授权方式。通过sendmsg（）和recvmes（）传递报文同时。将文件操作权限给予接收段，这样客户端就可以直接操作文件。
+
+且看 NtWriteFile()的代
+```
+[WriteFile() > NtWriteFile()]
+NTSTATUS WINAPI NtWriteFile(HANDLE hFile, HANDLE hEvent,
+PIO_APC_ROUTINE apc, void* apc_user,
+PIO_STATUS_BLOCK io_status,
+const void* buffer, ULONG length,
+PLARGE_INTEGER offset, PULONG key)
+{
+    int unix_handle, flags;
+    ......
+    io_status->Information = 0;
+    io_status->u.Status = wine_server_handle_to_fd( hFile, GENERIC_WRITE,
+    &unix_handle, &flags );
+    if (io_status->u.Status) return io_status->u.Status;
+    ......
+    if (flags & (FD_FLAG_OVERLAPPED|FD_FLAG_TIMEOUT))
+    {
+    ......
+    }
+    if (offset)
+    {
+        FILE_POSITION_INFORMATION fpi;
+        fpi.CurrentByteOffset = *offset;
+        io_status->u.Status = NtSetInformationFile(hFile, io_status, &fpi, sizeof(fpi),
+        FilePositionInformation);
+        ......
+    }
+    /* synchronous file write */
+    while ((io_status->Information = write( unix_handle, buffer, length )) == -1)
+    {
+        if ((errno == EAGAIN) || (errno == EINTR)) continue;
+        if (errno == EFAULT)
+        {
+            io_status->Information = 0;
+             io_status->u.Status = STATUS_INVALID_USER_BUFFER;
+        }
+        else if (errno == ENOSPC) io_status->u.Status = STATUS_DISK_FULL;
+        else io_status->u.Status = FILE_GetNtStatus();
+        break;
+    }
+    wine_server_release_fd( hFile, unix_handle );
+    return io_status->u.Status;
+}
+```
+* wine_server_handle_to_fd()与服务进程交互,从服务进程取得对已打开目标文件的访问授权。
+* 然后根据几个标志位决定所要求的是异步写还是同步写。实际应用中多数都是同步写,所以我们跳过针对异步写操作的代码。
+* 如果是指定了位置的写,那就先要通过 NtSetInformationFile()实现类似于lseek()的操作,我们也把它跳过去。接下来就是 write()
+* 注意这就是 Linux 的系统调用 write(),而且这是在客户进程一边直接进行、而不是通过服务进程代理的。最后,还有个对 wine_server_release_fd()的调用,其作用是释放对目标文件的访问权
+
+
+wine_server_handle_to_fd()代码如下
+```
+int wine_server_handle_to_fd( obj_handle_t handle, unsigned int access,
+int *unix_fd, int *flags )
+{
+    obj_handle_t fd_handle;
+    int ret, fd = -1;
+    *unix_fd = -1;
+    for (;;)
+    {
+        SERVER_START_REQ( get_handle_fd )
+        {
+            req->handle = handle;
+            req->access = access;
+            if (!(ret = wine_server_call( req ))) fd = reply->fd;
+            if (flags) *flags = reply->flags;
+        }
+        SERVER_END_REQ;
+        if (ret) return ret;
+        if (fd != -1) break;
+```
+* 客户进程向wine服务进程发送get_handle_fd请求，wine服务进程接收后调用DECLHADNLER（get_handle_fd）(调用的是Wine提供的函数列表，前面理解一致)，经过预编译处理后就变成req_get_handle_fd(),源码如下。（这里通过宏好像实现类似接口机制，但是针对有必要使用宏吗？）
+
+/* get a Unix fd to access a file */
+void req_get_handle_fd ( const struct get_handle_fd_request *req,struct get_handle_fd_reply *reply )
+{
+    struct fd *fd;
+    reply->fd = -1;
+    if ((fd = get_handle_fd_obj( current->process, req->handle, req->access )))
+    {
+        int unix_fd = get_handle_unix_fd( current->process, req->handle, req->access );
+        if (unix_fd != -1) reply->fd = unix_fd;
+        else if (!get_error())
+        {
+            assert( fd->unix_fd != -1 );
+            send_client_fd( current->process, fd->unix_fd, req->handle );
+        }
+        reply->flags = fd->fd_ops->get_file_info( fd );
+        release_object( fd );
+    }
+}

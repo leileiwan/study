@@ -396,7 +396,7 @@ static void send_reply( union generic_reply *reply )
 可以看到，文件从刷操作是在Wine服务段执行的，为什么不直接使用动态链接库将Windows文件句柄转换成Linux文件号显得简单明了。这里有作者无可奈何地方，后面有讲解。
 
 
-# 3. Windows文件操作
+# 3. Windows和Linux文件操作
 
 * windows 和linux内核之间并不似简单映射关系。如果真是简单映射，就不可能存在两套内核，兼容内核也不存在意义。
 
@@ -424,5 +424,84 @@ Linux把设备看成文件。Windows直接包文件看成对象。
 上 Windows 和 Linux 都是如此。
 
 * windows
-    ** df
+    * 在打开文件是就能设置是否可以讲文件遗传给子进程。
+    * 在创建子进程时，可以设定是否将可以遗传的文件遗传给子进程。如果设置为遗传，Windows会扫描父进程对象列表，将可以遗传的表项复制到子进程已打开表项中。
 * Linux
+    Linux 创建子进程主要分前后两步
+    * 首先通过系统调用fork创建一个线程，共享父进程空间和资源。然后通过execve（）将线程变成进程，开始独立拥有空间和资源。如果不做其他设置，这时子进程和父进程资源是完全一致的。
+    * 这步实现支持有选择遗传和继承。Linux内核有个struct file_struct有个位图和close_on_exec_init位图中的遗传标志位决定着以打开文件在执行execve（）时遗传与否。应用程序可以通过调用ioctl（）设置一打开文件的遗传位。
+
+于是,Windows 的打开文件系统调用可以这样实现:
+```
+NtOpenFile()
+{
+    ......
+    fd = open();
+    if (允许遗传)
+    ioctl(fd, FIONCLEX);
+    // exec 时不关闭
+    else
+    ioctl(fd, FIOCLEX);
+    //// exec 时关闭
+}
+```
+Windows 允许在创建子进程时再作一次选择。如果选择不遗传,那
+么所有的已打开文件都不遗传。而 Linux 却不提供这一次选择,这就是一项比较显
+著的“核内差异”了。
+
+核外补补方案：
+```
+NtCreateProcess()
+{
+    ......
+    if (不遗传)
+    {
+        //根据副本 close_on_exec 位图
+        for(每个允许遗传的已打开文件)
+        ioctl(fd, FIOCLEX);
+        //暂时设置成不遗传
+    }
+    fork()
+    if (在父进程中)
+    {
+        if (不遗传)
+        {
+            //还是根据副本 close_on_exec 位图
+            for(每个允许遗传的已打开文件)
+            ioctl(fd, FIONCLEX);
+            //恢复原状
+        }
+    }
+    ......
+}
+```
+如果选择不遗传,就在 fork()之前先把有关的已打开文件暂时改成不让遗传,
+然后在 fork()以后由父进程把这些已打开文件的遗传控制位复原。这里的问题是允
+许遗传的已打开文件可能很多,所以可能要调用 ioctl()很多次。
+
+用 Linux 的系统调用来模拟实现 Windows 的系统调用,就好像是用一种高级语言实现另一种高级语言,这就是一个实例。
+
+相对核外补补，在核内修改相对而言就简单很多。但是修改修改发现越来越像Windows，这就失去了兼容内核意义。
+
+### 3.1.3 文件访问的跨进程复制
+Windows文件系统不仅支持遗传，还支持非血缘关系的进程之间的文件复制。Windows 为此提供了一个系统调用 NtDuplicateObject()
+
+```
+NTSTATUS
+NTAPI
+NtDuplicateObject(
+IN HANDLE SourceProcessHandle,
+IN HANDLE SourceHandle,
+IN HANDLE TargetProcessHandle,
+OUT PHANDLE TargetHandle OPTIONAL,
+IN ACCESS_MASK DesiredAccess,
+IN ULONG Attributes,
+IN ULONG Options);
+```
+* windows 调用该函数可以是source 和target进程，也可是第三方进程。
+* Linux 管道限制于父进程和子进程之间。而Windows可以调用NtDuplicateObject在任何两进程之间建立管道。
+* 如果使用核外补补方式，只能通过文件服务器形式进行复制，wine是这么做的。但是这样也存在很多问题。
+    * 本来都在本地，却要走文件服务器，效率低。但是文件操作往往有又是基本操作，对效率要求比较大。
+    * wine以牺牲效率为代价死守核外补补策略，导致用户不愿意使用wine。
+
+

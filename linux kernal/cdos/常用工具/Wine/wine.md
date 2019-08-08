@@ -104,6 +104,10 @@ static const req_handler req_handlers[REQ_NB_REQUESTS] =
 
 
 ### 2.1.2 wine程序主函数逻辑结构
+* 函数进程主题是server/fd.c中无限循环main_loop()
+* 这和循环通过poll（）函数监听已经建立的所有socket和pipe。当从某个端口监听到消息时间时，就通过fd_poll_event处理消息事件。
+
+
 
 ```
 [main() > main_loop()]
@@ -129,3 +133,95 @@ void main_loop(void)
     }
 }
 ```
+
+
+* 服务进程启动之初只有一个socket（master socket），所有Windows程序运行时开始都是同master socket 通信。当wine收到通信时，就为Windows程序创建一个进程管理块，并为之创建一个Pipe，作为进程和进程之间通信手段（pipe和socket之间的区别在这里就能体现，socket 多对多，效率低。pipe一对一，效率高）.上面代码是通过master_socket_poll_event()中，master_socket的fd_ops数据结构在master_socket_df_ops保证服务进程对此函数调用（server/request.c）
+
+
+* 之后Windows程序和服务进程通过pip保持通信。对Windows程序发出的请求，服务进程通过fd_poll_event（）函数响应请求。fd_poll_event执行由管道的 fd_ops 数据结构
+thread_fd_ops 中给定的函数 thread_poll_event()，这个函数使用请求中使用的调用号（REQ_load_dll）为下标，在上述数组中req_handlers[]内找出相应函数并执行。最后给予请求答复。
+
+* windows在发出请求后就sleep，在收到回复后就恢复执行。
+
+* thread_poll_event 代码如下
+    * thread_poll_event
+    ```
+    [main() > main_loop() > fd_poll_event() > thread_poll_event()]
+    /* handle a client event */
+    static void thread_poll_event( struct fd *fd, int event ){
+        struct thread *thread = get_fd_user( fd );
+        assert( thread->obj.ops == &thread_ops );
+        if (event & (POLLERR | POLLHUP)) kill_thread( thread, 0 );
+        else if (event & POLLIN) read_request( thread );
+        else if (event & POLLOUT) write_reply( thread );
+    }
+    ```
+    数据结构 struct fd 中含有具体管道属于(通往)哪一个进程/线程的信息,因此可
+以知道是谁发来的请求。在正常的情况下,这个函数会调用 read_request(),我们
+只看其主体部分.
+    
+    * read_request
+    ```
+    [main() > main_loop() > fd_poll_event() > thread_poll_event() > read_request()]
+    /* read a request from a thread */
+    void read_request( struct thread *thread )
+    {
+        ......
+        if (!thread->req_toread) /* no pending request */
+        {
+            if ((ret = read( get_unix_fd( thread->request_fd ), &thread->req,
+            sizeof(thread->req) )) != sizeof(thread->req)) goto error;
+            if (!(thread->req_toread = thread->req.request_header.request_size))
+            {
+                        /* no data, handle request at once */
+                call_req_handler( thread );
+                return;
+            }
+            if (!(thread->req_data = malloc( thread->req_toread )))
+            fatal_protocol_error( thread,
+            "no memory for %d bytes request\n", thread->req_toread );
+        }
+        ......
+    }
+    ```
+    所谓 read_request(),实际上是“读取并执行”请求。具体的执行由
+call_req_handler()启动.
+
+
+    * call_req_handler
+    ```
+    /* call a request handler */
+    static void call_req_handler( struct thread *thread )
+    {
+        union generic_reply reply;
+        enum request req = thread->req.request_header.req;
+        current = thread;
+        current->reply_size = 0;
+        clear_error();
+        memset( &reply, 0, sizeof(reply) );
+        if (debug_level) trace_request();
+        if (req < REQ_NB_REQUESTS)
+        {
+            req_handlers[req]( &current->req, &reply );
+            if (current)
+            {
+                if (current->reply_fd)
+                {
+                    reply.reply_header.error = current->error;
+                    reply.reply_header.reply_size = current->reply_size;
+                    if (debug_level) trace_reply( req, &reply );
+                    send_reply( &reply );
+                }
+                else fatal_protocol_error( current, "no reply fd for request %d\n", req );
+            }
+            current = NULL;
+            return;
+        }
+        fatal_protocol_error( current, "bad request %d\n", req );
+    }
+    ```
+
+
+### 2.1.3 wine和Windows程序之间的通信
+
+

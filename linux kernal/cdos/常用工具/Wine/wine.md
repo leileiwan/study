@@ -227,9 +227,149 @@ call_req_handler()启动.
     * RPC是进程之间调用。性能差，扩展性好，隔离性强。
 
 
-### 2.1.3 wine和Windows程序之间的通信
+### 2.1.3 wine和Windows程序之间文件操作
 
 * wine 中使用了大量的宏定义，理解这些宏定义都理解wine代码至关重要。
 
+下面是一段关于文件冲刷代码
+```
+NTSTATUS
+WINAPI NtFlushBuffersFile(HANDLE hFile, IO_STATUS_BLOCK* IoStatusBlock )
+{
+    NTSTATUS ret;
+    HANDLE hEvent = NULL;
+    SERVER_START_REQ( flush_file )
+    {
+        req->handle = hFile;
+        ret = wine_server_call( req );
+        hEvent = reply->event;
+    }
+    SERVER_END_REQ;
+    ......
+    return ret;
+}
+```
 
+* 这段代码主要内容是，Windows程序向wine请求冲刷文件，wine处理后返回结果
+* req、reply分别代码请求和返回，wine_server_call代表wine处理函数。
+* SERVER_START_REQ、SERVER_END_REQ是两个宏定义
 
+```
+#define SERVER_START_REQ(type) \
+do { \
+struct __server_request_info __req; \
+struct type##_request * const req = &__req.u.req.type##_request; \
+const struct type##_reply * const reply = &__req.u.reply.type##_reply; \
+memset( &__req.u.req, 0, sizeof(__req.u.req) ); \
+__req.u.req.request_header.req = REQ_##type; \
+__req.data_count = 0; \
+(void)reply ; \
+do
+```
+
+```
+#define SERVER_END_REQ \
+while(0); \
+} while(0)
+```
+* 此时首先把发送给服务进程的数据结构视为 struct flush_file_request,而把服务进程的答复则视为 struct flush_file_reply。
+* REQ_flush_file,这个常数定义于 server_protocol.h 中的 enum request{}
+* 两个宏操作以及夹在其中的代码构成嵌套的 do{ }while(0)语句。总的来说就是完成对flush_file_request 的设置,将其发送给服务进程,等待其答复,并从答复中抽取所需的信息。
+
+宏展开代码如下
+```
+do {
+    struct __server_request_info __req;
+    struct type##_request * const req = &__req.u.req. flush_file_request;
+    const struct type##_reply * const reply = &__req.u.reply. flush_file_reply;
+    memset( &__req.u.req, 0, sizeof(__req.u.req) );
+    __req.u.req.request_header.req = REQ_flush_file;
+    __req.data_count = 0;
+    (void)reply ;do
+    {
+        req->handle = hFile;
+        ret = wine_server_call( req );
+        hEvent = reply->event;
+    }
+    while(0);
+} while(0)
+```
+
+这里的函数 wine_server_call()就是把调用请求发送给服务进程,并等待服务进
+程的回答,其代码在 server.c 中。
+```
+unsigned int wine_server_call( void *req_ptr )
+{
+    struct __server_request_info * const req = req_ptr;
+    sigset_t old_set;
+    sigprocmask( SIG_BLOCK, &block_set, &old_set );
+    send_request( req );
+    wait_reply( req );
+    sigprocmask( SIG_SETMASK, &old_set, NULL );
+    return req->u.reply.reply_header.error;
+}
+```
+* 这里的 send_request()将调用请求写入通向服务进程的管道,当服务进程接受到调用请求时会根据调用号从函数指针数组
+req_handlers[ ]中找到相应的指针并加以调用。对于 flush_file,这个指针是
+req_flush_file
+
+```
+/* flush a file buffers */
+DECL_HANDLER(flush_file)
+{
+    struct fd *fd = get_handle_fd_obj( current->process, req->handle, 0 );
+    struct event * event = NULL;
+    if (fd)
+    {
+        fd->fd_ops->flush( fd, &event );
+        if ( event )
+        {
+            reply->event = alloc_handle( current->process, event, SYNCHRONIZE, 0 );
+        }
+        release_object( fd );
+    }
+}
+```
+显然,DECL_HANDLER 是个宏定义,其定义如下:
+```
+#define DECL_HANDLER(name) \
+void req_##name( const struct name##_request *req, struct name##_reply *reply )
+```
+这样,这个函数经过预处理以后就成为了:
+```
+void req_flush_file ( const struct flush_file_request *req, struct flush_file_reply
+*reply )
+{
+. . . . . .
+}
+```
+注意 req_flush_file()中的 fd->fd_ops->flush( fd, &event ),这里的函数指针 flush
+实际上指向函数 file_flush(),这是由数据结构 file_fd_ops 给定的:
+```
+static const struct fd_ops file_fd_ops =
+{
+    file_get_poll_events, /* get_poll_events */
+    file_poll_event,/* poll_event */
+    file_flush,/* flush */
+    file_get_info,/* get_file_info */
+    
+    file_queue_async, /* queue_async */
+    file_cancel_async /* cancel_async */
+};
+
+```
+我们接着看 file_flush()的代码:
+```
+[main_loop() > fd_poll_event() > thread_poll_event() > read_request()
+> call_req_handler() > req_flush_file() > file_flush()]
+static int file_flush( struct fd *fd, struct event **event )
+{
+    int ret = (fsync( get_unix_fd(fd) ) != -1);
+    if (!ret) file_set_error();
+    return ret;
+}
+```
+* 这里的 fsync()是 Linux 系统调用,而 get_unix_fd()将代表着 Windows 已打开文件的数据结构 fd 转换成代表着 Linux 已打开文件的“打开文件号”。
+
+完成了所要求的服务以后,程序依次返回到 call_req_handler()中,并在那里调
+用 send_reply():

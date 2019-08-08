@@ -585,6 +585,7 @@ int *unix_fd, int *flags )
 ```
 * 客户进程向wine服务进程发送get_handle_fd请求，wine服务进程接收后调用DECLHADNLER（get_handle_fd）(调用的是Wine提供的函数列表，前面理解一致)，经过预编译处理后就变成req_get_handle_fd(),源码如下。（这里通过宏好像实现类似接口机制，但是针对有必要使用宏吗？）
 
+```
 /* get a Unix fd to access a file */
 void req_get_handle_fd ( const struct get_handle_fd_request *req,struct get_handle_fd_reply *reply )
 {
@@ -603,3 +604,116 @@ void req_get_handle_fd ( const struct get_handle_fd_request *req,struct get_hand
         release_object( fd );
     }
 }
+```
+* get_handle_fd_obj() 获取当前进程（客户）所具有的读写权限handler是否有效，来判断是否第一次来访问文件（ req->access 访问文件权限）
+* 如果handle有效
+    * struct fd: 服务进程已经创建客户进程handler和wine服务器中Unix文件号映射。所以返回指向这个映射关系的结构体指针fd。
+    * struct unix_fd: 进一步通过get_handle_unix_fd（）函数取得客户进程到linux中已打开文件号映射。
+    * 如果客户进程对此文件的读/写已经不是第一次,那么映射已经建立,unix_fd 就不是-1,于是就把 reply->fd 设置成 unix_fd,作为对客户进程的回答。
+    * 如果unix_fd=-1,说明进程和第一次打开文件之间映射并没有创建。但是,只要服务进程已经打开目标文件,则 fd->unix_fd、即目标文件在服务进程中的已打开文件号就不会是-1(意思是绕过了wine服务端，客户端直接和文件交互)。在这种情况下,就通过 send_client_fd()把对这个已打开文件的访问权授予客户进程
+
+
+Wine 对文件读/写的优化,关键就在这里。
+```
+[req_get_handle_fd() > send_client_fd()]
+/* send an fd to a client */
+int send_client_fd( struct process *process, int fd, obj_handle_t handle )
+{
+    int ret;
+    ......
+    #ifdef HAVE_STRUCT_MSGHDR_MSG_ACCRIGHTS
+    msghdr.msg_accrightslen = sizeof(fd);
+    msghdr.msg_accrights = (void *)&fd;
+    #else /* HAVE_STRUCT_MSGHDR_MSG_ACCRIGHTS */
+    msghdr.msg_control
+    = &cmsg;
+    msghdr.msg_controllen = sizeof(cmsg);
+    cmsg.fd = fd;
+    #endif /* HAVE_STRUCT_MSGHDR_MSG_ACCRIGHTS */
+    myiovec.iov_base = (void *)&handle;
+    myiovec.iov_len = sizeof(handle);
+    ret = sendmsg( get_unix_fd( process->msg_fd ), &msghdr, 0 );
+    if (ret == sizeof(handle)) return 0;
+    ......
+}
+```
+* fd 不是数据结构指针,而是服务进程的一个已打开文件号
+* 发送端必须调用sendmsg()（是发送给Windows程序客户端，因为这里wine服务段已经有文件操作权限）,而接收端必须调用 rcvmsg()。才能使用Socket 通信的一个特殊功能把对这个已打开文件的访问权授予对方。
+
+回到 req_get_handle_fd()、即 DECL_HANDLER(get_handle_fd)的代码,下面就没有什么操作了,所以服务进程把 get_handle_fd_reply 数据结构作为响应报文发回给客户进程。注意这个发送与 sendmsg()的区别。前者是通过管道发送,并且此时客户进程也正在这个管道的另一端等待接收。而后者,如果调用了的话,是通过一个 Unix 域的 Socket 发送,但是客户进程此刻还没有企图从 Socket 的另一端接收,发送过去的报文将进入其接收队列。
+
+客户进程受内核调度继续运行之后,首先取得响应报文发回来的打开文件号 fd。
+如果 fd 不是-1,那么这就是目标文件在客户进程这一头的 Unix 打开文件号,这就
+行了。可是,如果 fd 是-1,那就说明这是本进程第一次企图读/写这个文件,此时
+应该从上述的 Socket 获取对此已打开文件的授权。
+
+```
+我们继续往下看 wine_server_handle_to_fd()的代码:
+[WriteFile() > NtWriteFile() > wine_server_handle_to_fd()]
+        /* it wasn't in the cache, get it from the server */
+        fd = receive_fd( &fd_handle );
+        /* and store it back into the cache */
+        ret = store_cached_fd( &fd, fd_handle );
+        if (ret) return ret;
+        if (fd_handle == handle) break;
+        /* if we received a different handle this means there was
+        * a race with another thread; we restart everything from
+        * scratch in this case.
+        */
+    }
+    /* end for */
+    if ((fd != -1) && ((fd = dup(fd)) == -1)) return
+    STATUS_TOO_MANY_OPENED_FILES;
+    *unix_fd = fd;
+    return STATUS_SUCCESS;
+}
+```
+显然,这段代码中 receive_fd()的目的就是从 Socket 获取授权。
+```
+[WriteFile() > NtWriteFile() > wine_server_handle_to_fd() > receive_fd()]
+static int receive_fd( obj_handle_t *handle )
+{
+    struct iovec vec;
+    int ret, fd;
+    #ifdef HAVE_STRUCT_MSGHDR_MSG_ACCRIGHTS
+    struct msghdr msghdr;
+    fd = -1;
+    msghdr.msg_accrights= (void *)&fd;
+    msghdr.msg_accrightslen = sizeof(fd);
+    #else /* HAVE_STRUCT_MSGHDR_MSG_ACCRIGHTS */
+    struct msghdr msghdr;
+    struct cmsg_fd cmsg;
+    cmsg.len = sizeof(cmsg);
+    cmsg.level = SOL_SOCKET;
+    cmsg.type = SCM_RIGHTS;
+    cmsg.fd= -1;
+    msghdr.msg_control= &cmsg;
+    msghdr.msg_controllen = sizeof(cmsg);
+    msghdr.msg_flags= 0;
+    #endif /* HAVE_STRUCT_MSGHDR_MSG_ACCRIGHTS */
+    msghdr.msg_name= NULL;
+    msghdr.msg_namelen = 0;
+    msghdr.msg_iov= &vec;
+    msghdr.msg_iovlen = 1;
+    vec.iov_base = (void *)handle;
+    vec.iov_len = sizeof(*handle);
+    for (;;)
+    {
+        if ((ret = recvmsg( fd_socket, &msghdr, 0 )) > 0)
+        {
+            #ifndef HAVE_STRUCT_MSGHDR_MSG_ACCRIGHTS
+            fd = cmsg.fd;
+            #endif
+            if (fd == -1) server_protocol_error( "no fd received for handle %d\n", *handle );
+            fcntl( fd, F_SETFD, 1 ); /* set close on exec flag */
+            return fd;
+        }
+        if (!ret) break;
+        if (errno == EINTR) continue;
+        if (errno == EPIPE) break;
+        server_protocol_perror("recvmsg");
+    }
+    /* the server closed the connection; time to die... */
+    server_abort_thread(0);
+}
+```

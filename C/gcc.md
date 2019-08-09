@@ -192,6 +192,17 @@ main.o calc.o: calc.h
 clean:
 	-rm *.o
 ```
+* 推荐使用下面一种清楚命令（.POHONY方式）。
+    * .PHONY是makefile关键字，标识clean是一个伪目标。
+    * rm 前面"-"表示在rm出现问题时先不要管
+    * clean 并不是我们要执行的文件，为目标不是文件，更像是一个label
+
+
+## 3.5 makefile自动生成
+    makefile 可使用cmake自动生成。参考<<cmake入门实战>>
+
+
+
 执行过程如下
 ```
 root@wanlei:~/C_workspace# make

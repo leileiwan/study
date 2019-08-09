@@ -1,3 +1,4 @@
+[toc]
 # 1.常用服务命令
 
 ## 1.1关闭selinux
@@ -69,3 +70,28 @@ patch -p1 < patch1.diff
 注意：patch -p后面是不能带负数 的。不使用p参数的时候，patch命令会 忽略 任何目录，直接使用文件。
 
 
+
+## 1.6 ps
+* ps -ef | grep processName
+    查看和processname有关所有进程
+* ps -aux | grep processname
+    查看在内存中和processname有关所有进程
+* ps -f
+    查看和当前会话有关进程
+* ps -u root
+    
+
+## 1.7 kill
+* kill -9 process 杀死指定进程（-9 可能出现问题）
+* killall -9 process 杀死指定进程的全部进程
+
+# 2. 运行符号
+
+* & 让程序在后台执行
+    ```
+    ./Exe_name &
+    ```
+* Ctrl+z 暂停当前程序，并转为后台挂起
+* bg n 将后台被暂停的n号程序唤醒，并在后台继续执行
+* fg n 将后台程序n调度在前台执行
+* jobs 查看被挂起的工作序号

@@ -1,6 +1,7 @@
+[toc]
 # default
 * ctrl+shift+p run: pugin command
-* envrioment: ubuntu
+
 # 1. Install markdown pugin
 * install Markdown Preview Enhanced
 
@@ -41,3 +42,8 @@ file->preferences->settings->extensions->Paste Image
 ![2019-08-06-15-53-41.png](./images/2019-08-06-15-53-41.png)
 
 
+# 3. 自动保存
+之前没有设置自动保存，笔记写多了之后就很容易忘记保存，因此还是添加上自动保存功能。
+
+点击左下角设置->点击 settings->点击user的application->点击update做如下设置
+![2019-08-12-11-15-02.png](./images/2019-08-12-11-15-02.png)

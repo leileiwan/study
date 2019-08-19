@@ -35,3 +35,13 @@ TSS 结构基本上是非常固定的。
 * CR3 标识进程内存页初始化地址，一个进程一个。我们知道，每个进程虚拟编址都是从0开始，只有借助CR3才能找到真实物理地址
 ![2019-08-15-17-20-36.png](./images/2019-08-15-17-20-36.png)
 
+## 2.3 task_struct
+task_struct是我们常说的PCB进程控制块结构体体。那么task_struct和GDT、LDT、TSS之间的关系又是什么
+![2019-08-19-11-30-29.png](./images/2019-08-19-11-30-29.png)
+
+如图所示
+* GDT项关联的其实是task_struct结构体，并非是LDT和TSS
+* task_struct是包含LDT和TSS结构体的
+* 因此我们通过GDT找到task_struct，再找到LDT和TSS
+
+

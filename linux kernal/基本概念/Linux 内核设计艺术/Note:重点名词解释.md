@@ -46,4 +46,44 @@ task_struct是我们常说的PCB进程控制块结构体体。那么task_struct�
 
 # 3. 文件系统重要名词解释
 
-
+## 3.2 引导块、超级块、i节点位图、逻辑块位图、i节点区块
+* 引导块： BIOS自动读入执行的代码
+* 超级块：存放设备文件系统信息，包括逻辑块数、i节点数、最大文件长度等。对应结构体uper_block
+```
+struct super_block {
+    unsigned short s_ninodes;
+    unsigned short s_nzones;
+    unsigned short s_imap_blocks;
+    unsigned short s_zmap_blocks;
+    unsigned short s_firstdatazone;
+    unsigned short s_log_zone_size;
+    unsigned long  s_max_size;
+    unsigned short s_magic;
+/* These are only in memory */ //上面这些字段是具体存储在盘设备中，下面是在内存中初始化的结构体成员
+    struct buffer_head 　　*s_imap[8];
+    struct buffer_head 　　*s_zmap[8];
+    unsigned short 　　　　 s_dev;
+    struct m_inode 　　　　 *s_isup; //根目录i节点
+    struct m_inode 　　　　 *s_imount;
+    unsigned long 　　　　  s_time;
+    struct task_struct 　　*s_wait;
+    unsigned char 　　　　　　s_lock;
+    unsigned char 　　　　　　s_rd_only;
+    unsigned char 　　　　　　s_dirt;
+};
+```
+* i节点位图：表示i节点是否被使用，i节点对应文件或者目录索引，相当与文件创建或者被内核管理文件数量
+* 逻辑块位图：表示逻辑块是否被使用，逻辑块是实际上的数据块，存储文件内容
+* i节点区域：存放具体i节点数据；存储结构如下
+```
+struct d_inode {
+    unsigned short i_mode;
+    unsigned short i_uid;
+    unsigned long i_size;
+    unsigned long i_time;
+    unsigned char i_gid;
+    unsigned char i_nlinks;
+    unsigned short i_zone[9];//对应数据区内的逻辑块号，其中0~6是直接块号、7为一次直接块号、8是二次直接块号。
+};
+```
+* 数据区：即逻辑块区域；

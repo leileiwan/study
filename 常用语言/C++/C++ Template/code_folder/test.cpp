@@ -1,27 +1,32 @@
+#include "vector"
+#include "stdexcept"
 #include "iostream"
 using namespace std;
 
+template <typename T>
+class Stack{
+    private: vector<T> elems;
 
-int max(int a,int b){
-    cout<<"no template..."<<endl;
-    return a>b?a:b;
-}
-
-template <typename T1>
-T1 max(T1 a,T1 b){
-    return a>b?a:b;
-}
-
-
-template <typename T1>
-T1 max(T1 a,T1 b,T1 c){
-    return a>::max(b,c)?a:(::max(b,c));
-}
+    public:
+        void push(T e){
+            elems.push_back(e);
+        }
+        void pop(){
+            elems.pop_back();
+        }
+        T top() const{
+            return elems.back();
+        }
+        bool empty(){
+            return elems.empty();
+        }
+};
 
 int main(){
-    int a=0;
-    int b=1;
-    cout <<::max(1,2)<<endl;
-    cout<<::max(1.0,2.0,3.0)<<endl;
+    Stack<int> int_stack;
+    int_stack.push(1);
+    cout<<int_stack.top()<<endl;
+    int_stack.push(2);
+    cout<<int_stack.top()<<endl;
     return 0;
 }

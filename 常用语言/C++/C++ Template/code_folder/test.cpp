@@ -8,8 +8,8 @@ T const& t_max(T const& a,T const& b){
 }
 
 int main(){
-    char a='0';
-    char b='1';
-    cout << int(t_max(a,b))<<"\n";
+    int a=0;
+    float b=1.2;
+    cout << t_max<float>(a,b)<<"\n";
     return 0;
 }

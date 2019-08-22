@@ -1,10 +1,15 @@
 #include "iostream"
 using namespace std;
 
+template <typename T>
+
+T const& t_max(T const& a,T const& b){
+    return a>b?a:b;
+}
+
 int main(){
-    int a=0;
-    cout << "zz";
-    a=1;
+    char a='0';
+    char b='1';
+    cout << int(t_max(a,b))<<"\n";
     return 0;
 }
-//Unable to open 'libc-start.c': Unable to read file (Error: File not found (/build/glibc-LK5gWL/glibc-2.23/csu/libc-start.c)).

@@ -2,7 +2,6 @@
 using namespace std;
 
 int main(){
-    cout << "zz\n";
+    cout << "zz";
     return 0;
-
 }

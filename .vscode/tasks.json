@@ -11,15 +11,15 @@
                 "-g",
                 "${file}",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
+                "${fileDirname}/${fileBasenameNoExtension}.out"
             ],
-            "options": {
-                "cwd": "/usr/bin"
-            },
-            "problemMatcher": [
-                "$gcc"
-            ]
+            // "options": {
+            //     "cwd": "/usr/bin"
+            // },
+            // "problemMatcher": [
+            //     "$gcc"
+            // ]
         },
-        {
+        
     ]
 }

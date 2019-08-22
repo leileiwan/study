@@ -18157,9 +18157,10 @@ namespace std __attribute__ ((__visibility__ ("default")))
 # 2 "/home/wanlei/Desktop/study/常用语言/C++/code_folder/test.cpp" 2
 
 # 2 "/home/wanlei/Desktop/study/常用语言/C++/code_folder/test.cpp"
-using namespaces std;
+using namespace std;
 
 int main(){
     cout << "zz";
     return 0;
+
 }

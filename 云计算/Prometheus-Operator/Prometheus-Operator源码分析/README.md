@@ -6,6 +6,8 @@ Prometheus原理简单来说是通过ip和port获取采集器内容，解析采�
 * Kubernetes 管理的基本单位是pod，pod 随时可能delete、update、crate，scale，水平扩展能力比较强。这恰恰是Prometheus 弱点（ip、端口静态）。这个需要第三方功能来实现。
 * 将Prometheus、AlertManager纳管在Kubernetes中，动态扩展。
 * 权限管理。
+* fork 仓库中添加部分注释，https://github.com/xiaoluwwwxiaolu/Prometheus-Operator
+
 以上，是我认为Prometheus 监控Kubernetes集群需要Prometheus-Operator工具的几点原因。
 
 ## 1.1 阅读源码条件

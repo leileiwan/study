@@ -16,6 +16,19 @@
 
 
 # 3. 技术栈
+## 3.1 Prometheus、Kubernetes
+最开始接触云计算是从Prometheus、Kubernetes较上层应用开始的。由于实验室研究方向和个人希望从事底层技术，以后对这方面只是保持了解状态，不会继续深究。
+* Prometheus
+    * prometheus 各个组成结构和原理文档阅读完毕，参见Prometheus官网
+    * prometheus client_python写采集器
+    * ansible 自动化不熟采集器和Prometheus，实现一键部署（部署环境估计2000台计算节点）
+    * prometheus keepalive实现主备节点
+* Kubernetes
+    * Kubernetes简单使用手册基本阅读完毕，参见Kubernetes指南
+    * 针对人工智能容器训练定制CRD和Controller，容器云训练的核心节点，稳定新还不错（写过脚本验证，0.5s内频繁create delete 不会出现问题）。并发处理性能有待验证（没有大规模资源验证）。
+    * client-go源码初略阅读完毕。
+* Prometheus-Operator
+    * Prometheus Operator 源码阅读完毕。
 ## 3.2 研究生期间重点工作内容
 * Linux内核设计艺术【2019.08.10-至今】
     * 计算机加电到第一次执行Cmain函数

@@ -1,6 +1,9 @@
-[toc]
+<!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
+
 
 ![01.jpg](./images/01.jpg)
+
+
 
 
 # 1. 背景
@@ -8,6 +11,7 @@
 * 启动BIOS，准备中断向量表和中断服务程序
 * 从启动盘加载操作系统到内存，加载工作就是有前面中断服务程序执行的
 * 执行main函数前做一些过渡工作
+
 
 
 

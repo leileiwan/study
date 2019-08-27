@@ -80,6 +80,8 @@ patch -p1 < patch1.diff
 * ps -f
     查看和当前会话有关进程
 * ps -u root
+*  ps -T -p 1546 | wc -l 查看某个进程所有线程
+
     
 
 ## 1.7 kill

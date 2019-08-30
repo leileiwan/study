@@ -25,7 +25,7 @@
 
 # 3. 技术栈
 ## 3.1 Prometheus、Kubernetes
-最开始接触云计算是从Prometheus、Kubernetes较上层应用开始的。由于实验室研究方向和个人希望从事底层技术，以后对这方面只是保持了解状态，不会继续深究。
+最开始接触云计算是从Prometheus、Kubernetes较上层应用开始的。由于实验室研究方向和个人希望从事底层技术。
 * Prometheus
     * prometheus 各个组成结构和原理文档阅读完毕，参见Prometheus官网
     * prometheus client_python写采集器
@@ -44,13 +44,14 @@
     * 创建1号进程(init进程)
     * 创建2号进程（shell进程）
     * 文件基本操作
+    * 用户进程与内存管理
 
 * C++ template [2019.08.22-至今]
     * 函数template
     * class template
+    * 暂时终止
 
 * Wine 兼容内核[2019.08.22-至今]
-    （刚开是不是很喜欢做wine，觉得这玩意做出来东西没什么用，但是wine本身设计思路是很有意思的，有个能为虚拟化呢提供一种设计思路，所以打算读下去）
     * 漫谈wine概述
 
 * Linux kernel 0.11 源码阅读和编译修改【跟进中】

@@ -1,32 +1,19 @@
-#include "vector"
-#include "stdexcept"
 #include "iostream"
+#include "vector"
 using namespace std;
 
-template <typename T>
-class Stack{
-    private: vector<T> elems;
-
-    public:
-        void push(T e){
-            elems.push_back(e);
+class Solution {
+public:
+    vector<int> twoSum(vector<int>& nums, int target) {
+        vector<int> res;
+        for(int i=0;i<nums.size()-1;i++){
+            for(int j=i+1;j<nums.size();j++){
+                if(nums[i]+nums[j]==target){
+                    res.push_back(j);
+                    res.push_back(i);
+                    return res;
+                }
+            }
         }
-        void pop(){
-            elems.pop_back();
-        }
-        T top() const{
-            return elems.back();
-        }
-        bool empty(){
-            return elems.empty();
-        }
+    }
 };
-
-int main(){
-    Stack<int> int_stack;
-    int_stack.push(1);
-    cout<<int_stack.top()<<endl;
-    int_stack.push(2);
-    cout<<int_stack.top()<<endl;
-    return 0;
-}

@@ -1,4 +1,12 @@
-# 1. 在现有k8s环境中安装Kubeflow
+<!-- TOC -->
+
+- [1. docker 支持NVIDIA（我司Kubernetes集群支持，可以忽略）](#1-docker-支持nvidia我司kubernetes集群支持可以忽略)
+    - [1.1 docker 升级成19.03](#11-docker-升级成1903)
+- [2. 安装Kubeflow](#2-安装kubeflow)
+- [3. 创建PV](#3-创建pv)
+
+<!-- /TOC -->
+# 1. docker 支持NVIDIA（我司Kubernetes集群支持，可以忽略）
 ## 1.1 docker 升级成19.03
 
 * yum list docker-ce --showduplicates | sort -r
@@ -31,6 +39,33 @@
 
 
 # 2. 安装Kubeflow
-* note:一定要注意Kubernetes集群版本 1.12以及以上和1.12以下安装有区别
+* note:一定要注意Kubernetes集群版本 1.12以及以上不能使用下面旧版本安装
     * 旧版本安装https://kiddie92.github.io/2019/01/05/CentOS-%E4%B8%8B%E5%9F%BA%E4%BA%8Ekubernetes%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2kubeflow/
+
+* 安装过程如下
+    * 安装过程没有包含PV创建，参照下面过程
 https://www.kubeflow.org/docs/started/k8s/kfctl-k8s-istio/
+
+* 安装过程中使用各种工具解释：
+  * https://www.kubeflow.org/docs/other-guides/kustomize/
+
+
+# 3. 创建PV
+* 类型是hostPath PV
+```
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: katib-mysql-pv
+  namespace: kubeflow
+  labels:
+    pv: katib-mysql-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/lustrenew/wanlei/kubeflow/katib-mysql"
+```
+

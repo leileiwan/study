@@ -167,3 +167,48 @@ spec:
 
 *  --world-size=16 这个参数没有使用，无关参数不要在args参数中使用，否则会报错
 * rank 如何设置.环境变量
+
+
+
+
+#4. 出现的问题
+由于网络模型限制，我们必须要分配pod在那些机器上，以及调度pod顺序。
+调度pod顺序非常难，可以从模型这边改进，我们可以做的是分配，比如16GPU，可以评分到指定的两个节点上。但是最好是自动平分到两个节点上。
+
+## 4.1 手动指定节点
+可以指定所有pod节点，但是谁也无法保证平分
+```
+ containers:
+  - name: nginx
+    image: nginx
+    imagePullPolicy: IfNotPresent
+  nodeSelector:
+    disktype: ssd
+```
+* [确认]  pytorch-operator :通过源码发现，pytorch可以制定pod调度在什么节点上
+```
+   Worker:
+      replicas: 15
+      restartPolicy: OnFailure
+      template:
+        spec:
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                    - bj-idc1-10-10-31-25
+                    - bj-idc1-10-10-31-26
+          containers:
+            - name: pytorch
+              image: xiaoluwwwxiaolu/pytorch-dist-mnist-test:1.0
+              args: ["--backend", "nccl"]
+              resources:
+                limits:
+                  nvidia.com/gpu: 1
+```
+
+[待确认]：有调度在什么机器上的需求吗？

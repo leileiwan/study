@@ -23,150 +23,10 @@
 
 
 # 3. 运行自身的nccl训练模型
-```
-spec:
-  containers:
-  - name: mpirun
-    image: mpirun
-    imagePullPolicy: IfNotPresent
-
-    command: ["/root/controller-mpirun/controller-mpirun"]
-    args: ["-kubeconfig=/root/.kube/config", "-master=https://10.5.8.31:6443"]
-```
-
-apiVersion: "kubeflow.org/v1"
-kind: "PyTorchJob"
-metadata:
-  name: "pytorch-dist-mnist-nccl"
-spec:
-  pytorchReplicaSpecs:
-    Master:
-      replicas: 1
-      restartPolicy: OnFailure
-      template:
-        spec:
-          containers:
-            - name: cuda1
-              image: registry.sensetime.com/share/platform/pytorch/pytorch:latest
-              command: ["/opt/miniconda3/bin/python"]
-              args: ["-u", "main_allreduce.py","-a", "resnet50","-j", "32","-b", "512","--epochs=1","--iter=500","--bucket=200","--world-size=16"]
-              securityContext:
-                capabilities:
-                  add: ["IPC_LOCK"]
-              env:
-                - name: NVIDIA_DRIVER_CAPABILITIES
-                  value: "compute,utility"
-                - name: NVIDIA_REQUIRE_CUDA
-                  value: "cuda>=9.0"
-                - name: NVIDIA_VISIBLE_DEVICES
-                  value: all
-                - name: CUDA_HOME
-                  value: "/usr/local/cuda"
-                - name: NCCL_DEBUG
-                  value: "INFO"
-                - name: LD_PRELOAD
-                  value: "/opt/nccl-2.4.8-1/lib/libnccl.so"
-              resources: 
-                limits:
-                  rdma/hca: 1
-              volumeMounts:
-                - mountPath: /dev/shm
-                  name: shm
-                - mountPath: /tmp
-                  name: tmp
-                - mountPath: /sys
-                  name: sys
-                - mountPath: /mnt/lustrenew/share
-                  name: share
-                - mountPath: /mnt/lustre/share/images
-                  name: imagenet
-          volumes:
-            - name: shm
-              hostPath:
-                path: /dev/shm
-                type: Directory
-            - name: tmp
-              hostPath:
-                path: /tmp
-                type: Directory
-            - name: sys
-              hostPath:
-                path: /sys
-                type: Directory
-            - name: share
-              hostPath:
-                path: /mnt/lustrenew/share
-                type: Directory
-            - name: imagenet
-              hostPath:
-                path: /mnt/lustre/share/images
-                type: Directory
-    Worker:
-      replicas: 15
-      restartPolicy: OnFailure
-      template:
-        spec:
-          containers:
-            - name: cuda1
-              image: registry.sensetime.com/share/platform/pytorch/pytorch:latest
-              command: ["/opt/miniconda3/bin/python"]
-              args: ["-u", "main_allreduce.py","-a", "resnet50","-j", "32","-b", "512","--epochs=1","--iter=500","--bucket=200","--world-size=16"]
-              securityContext:
-                capabilities:
-                  add: ["IPC_LOCK"]
-              env:
-                - name: NVIDIA_DRIVER_CAPABILITIES
-                  value: "compute,utility"
-                - name: NVIDIA_REQUIRE_CUDA
-                  value: "cuda>=9.0"
-                - name: NVIDIA_VISIBLE_DEVICES
-                  value: all
-                - name: CUDA_HOME
-                  value: "/usr/local/cuda"
-              resources: 
-                limits:
-                  rdma/hca: 1
-              volumeMounts:
-                - mountPath: /dev/shm
-                  name: shm
-                - mountPath: /tmp
-                  name: tmp
-                - mountPath: /sys
-                  name: sys
-                - mountPath: /mnt/lustrenew/share
-                  name: share
-                - mountPath: /mnt/lustre/share/images
-                  name: imagenet
-                - name: NCCL_DEBUG
-                  value: "INFO"
-                - name: LD_PRELOAD
-                  value: "/opt/nccl-2.4.8-1/lib/libnccl.so"
-                
-          volumes:
-            - name: shm
-              hostPath:
-                path: /dev/shm
-                type: Directory
-            - name: tmp
-              hostPath:
-                path: /tmp
-                type: Directory
-            - name: sys
-              hostPath:
-                path: /sys
-                type: Directory
-            - name: share
-              hostPath:
-                path: /mnt/lustrenew/share
-                type: Directory
-            - name: imagenet
-              hostPath:
-                path: /mnt/lustre/share/images
-                type: Directory
-~                
-
+             
 *  --world-size=16 这个参数没有使用，无关参数不要在args参数中使用，否则会报错
 * rank 如何设置.环境变量
+* CUDA版本和gpu driver版本匹配
 
 
 
@@ -211,4 +71,4 @@ spec:
                   nvidia.com/gpu: 1
 ```
 
-[待确认]：有调度在什么机器上的需求吗？
+[待确认]：有均分pod需求吗？

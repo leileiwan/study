@@ -59,3 +59,7 @@
     * 漫谈wine概述
 
 * Linux kernel 0.11 源码阅读和编译修改【跟进中】
+
+* 分布式系统 6.824
+    * MapReduce
+    * GFS

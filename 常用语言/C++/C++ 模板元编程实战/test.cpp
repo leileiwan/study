@@ -1,16 +1,19 @@
 #include "iostream"
 using namespace std;
-template <typename T>
+
+
+template <template <typename> typename T1,typename T2>
 struct Fun_
 {
-    using type=T;
+    using type=typename T1<T2>::type;
+    /* data */
 };
 
-//这里可以定义所有的类型
-template<typename T>
-using Fun=typename Fun_<T>::type;
+template <template <typename> typename T1,typename T2>
+using Fun=typename Fun_<T1,T2>::type;
 
-Fun<int> h=3;
+Fun<std::remove_reference,int&> h=3;
+
 
 int main(){
     cout<<"hello"<<endl;

@@ -1,19 +1,23 @@
 #include "iostream"
 using namespace std;
 
-template <typename T>
-struct RemoveReferenceConst_
-{
-    private:
-        using inter_type=typename std::remove_reference<T>::type;
-    public:
-        using type=typename std::remove_const<inter_type>::type;
+template <bool B,typename T,typename F>
+class conditional_test
+{   public:
+        using type=T;
 };
 
-template<typename T>
-using RemoveReferenceConst=typename RemoveReferenceConst_<T>::type;
+template<typename T,typename F>
+struct conditional_test<false,T,F>
+{   public:
+        using type=F;
+};
 
-RemoveReferenceConst<const int&> h=3;
+template<bool B,typename T,typename F>
+using conditional_test_t=typename conditional_test<B,T,F>::type;
+
+conditional_test_t<true,int,float> h=4;
+
 
 
 int main(){

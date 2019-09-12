@@ -1,22 +1,24 @@
 #include "iostream"
 using namespace std;
 
-template <bool B,typename T,typename F>
-class conditional_test
-{   public:
-        using type=T;
-};
+struct A;
+struct B;
 
-template<typename T,typename F>
-struct conditional_test<false,T,F>
-{   public:
-        using type=F;
-};
+template<typename T>
+constexpr size_t Fun=0;
 
-template<bool B,typename T,typename F>
-using conditional_test_t=typename conditional_test<B,T,F>::type;
+// parse error in template argument list constexpr size_t Fun<A>=1;
+// template<>
+// constexpr size_t Fun<A>=1;
 
-conditional_test_t<true,int,float> h=4;
+
+template<>
+constexpr size_t Fun<A> = 1;
+
+template<>
+constexpr size_t Fun<B> = 2;
+
+size_t h=Fun<B>;
 
 
 

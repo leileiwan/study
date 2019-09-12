@@ -2,17 +2,29 @@
 using namespace std;
 
 
-template <template <typename> class T1,typename T2>
-struct Fun_
-{
-    using type=typename T1<T2>::type;
-    /* data */
+template <bool AddorRemove> struct Fun_;
+
+template <>
+struct Fun_<true>{
+    template<typename T>
+    using type=std::add_lvalue_reference<T>;
 };
 
-template <template <typename> class T1,typename T2>
-using Fun=typename Fun_<T1,T2>::type;
+template <>
+struct Fun_<false>{
+    template<typename T>
+    using type=std::remove_reference<T>;
+};
 
-Fun<std::remove_reference,int&> h=3;
+template <typename T>
+template <bool AddorRemove>
+using Fun=typename Fun_(AddorRemove)::template type<T>;
+
+template <typename T>
+using Res_=Fun<false>
+
+Res_<int&>::type h=3;
+
 
 
 int main(){

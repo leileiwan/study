@@ -2,6 +2,36 @@
 using namespace std;
 
 
+template <bool AddorRemove> class Fun_;
+
+template <typename T>
+struct Fun_<true>{
+    template <typename T>
+    using type=std::add
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 template <bool AddorRemove> struct Fun_;
 
 template <>
@@ -17,11 +47,11 @@ struct Fun_<false>{
 };
 
 template <typename T>
-template <bool AddorRemove>
-using Fun=typename Fun_(AddorRemove)::template type<T>;
+    template <bool AddorRemove>
+    using Fun= typename Fun_<AddorRemove>::template type<T>;
 
 template <typename T>
-using Res_=Fun<false>
+using Res_=Fun<false>;
 
 Res_<int&>::type h=3;
 

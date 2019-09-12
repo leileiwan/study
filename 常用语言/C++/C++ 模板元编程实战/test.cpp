@@ -1,24 +1,24 @@
 #include "iostream"
 using namespace std;
 
-struct A;
-struct B;
+template <typename TW>
+struct Wrapper{
+    template <typename T,typename TD>
+    struct Fun_{
+        constexpr static size_t value=0;
+    };
 
-template<typename T>
-constexpr size_t Fun=0;
+    template<typename TD> 
+    struct Fun_<int,TD>{
+        constexpr static size_t value=1;
+    };
+    
+};
 
-// parse error in template argument list constexpr size_t Fun<A>=1;
-// template<>
-// constexpr size_t Fun<A>=1;
+template<typename T,typename TD>
+using Fun=typename Wrapper<int>::Fun_<T,TD>;
 
-
-template<>
-constexpr size_t Fun<A> = 1;
-
-template<>
-constexpr size_t Fun<B> = 2;
-
-size_t h=Fun<B>;
+size_t h=Fun<int,int>::value;
 
 
 

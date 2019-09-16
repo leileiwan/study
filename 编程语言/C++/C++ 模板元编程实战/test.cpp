@@ -1,17 +1,16 @@
 #include "iostream"
 using namespace std;
 
-template <bool IsFeedBackOut,typename T,std::enable_if_t<IsFeedBackOut>* =nullptr>
-auto FeedBackOut_(IsFeedBackOut,T){
-    return 1;
+template <bool check>
+auto fun(){
+    if constexpr(check){
+        return 1;
+    }else{
+        return 0;
+    }
 }
 
-template<bool IsFeedBackOut,typename T,std::enable_if_t<!IsFeedBackOut>* =nullptr>
-auto FeedBackOut_(IsFeedBackOut,T){
-    return 2;
-}
-
-auto h=FeedBackOut_(true,int);
+auto h=fun<false>();
 
 
 int main(){

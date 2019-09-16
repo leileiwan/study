@@ -13,7 +13,7 @@ constexpr size_t Fun=0;
 
 
 template<>
-constexpr size_t Fun<A>= 1;
+constexpr size_t Fun<A> = 1;
 
 template<>
 constexpr size_t Fun<B> = 2;

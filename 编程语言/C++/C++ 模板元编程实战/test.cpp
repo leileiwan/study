@@ -1,16 +1,13 @@
 #include "iostream"
 using namespace std;
 
-template <bool check>
-auto fun(){
-    if constexpr(check){
-        return 1;
-    }else{
-        return 0;
-    }
-}
+template <size_t... inputs>
+constexpr size_t SumArray = 0;
 
-auto h=fun<false>();
+template<size_t curr,size_t... inputs>
+constexpr size_t SumArray<curr,inputs...> = curr + SumArray<inputs...>;
+
+constexpr size_t  h = SumArray<1,2,3,4>;
 
 
 int main(){

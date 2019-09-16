@@ -1,24 +1,17 @@
 #include "iostream"
 using namespace std;
 
-struct A;
-struct B;
+template <bool IsFeedBackOut,typename T,std::enable_if_t<IsFeedBackOut>* =nullptr>
+auto FeedBackOut_(IsFeedBackOut,T){
+    return 1;
+}
 
-template<typename T>
-constexpr size_t Fun=0;
+template<bool IsFeedBackOut,typename T,std::enable_if_t<!IsFeedBackOut>* =nullptr>
+auto FeedBackOut_(IsFeedBackOut,T){
+    return 2;
+}
 
- //parse error in template argument list constexpr size_t Fun<A>=1;
- //template<>
- //constexpr size_t Fun<A>=1;
-
-
-template<>
-constexpr size_t Fun<A> = 1;
-
-template<>
-constexpr size_t Fun<B> = 2;
-
-size_t h=Fun<B>;
+auto h=FeedBackOut_(true,int);
 
 
 int main(){

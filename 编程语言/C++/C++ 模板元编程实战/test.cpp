@@ -4,28 +4,28 @@
 
 int search(char*s,char*t)
 {	
-	int size_t=strlen(t),size_s=strlen(s),T,i,j;
-	char *p=NULL;
-	for(i=0;i<=(size_s-size_t);i++)
-	{
-		p=s+i;
-		T=1;
-		for(j=0;j<size_t;j++)
-		{
-			if(*p!=*(t+j))
-			{
-				T=0;
-				break;
-			}
-			p++;
-		}
-		if(T==1)
-			break;
-	}
-	if(T==0)
-		return 0;
-	else
-		return 1;
+int size_t=strlen(t),size_s=strlen(s),T,i,j;
+char *p=NULL;
+for(i=0;i<=(size_s-size_t);i++)
+{
+p=s+i;
+T=1;
+for(j=0;j<size_t;j++)
+{
+if(*p!=*(t+j))
+{
+T=0;
+break;
+}
+p++;
+}
+if(T==1)
+break;
+}
+if(T==0)
+return 0;
+else
+return 1;
 }
 
 int main(){
@@ -33,6 +33,6 @@ int main(){
     char *p="tdxupd.exe";
     int res=search(s,p);
     printf("%d\n",res);
-    // system("pause");
+    system("echo hello");
     return 0;
 }

@@ -38,25 +38,19 @@ void *test_fun(void* arg){
 }
 int main(){
     //创建子进程
-    pid_t pid = fork();
-    if(pid==-1){
-        FIXME("创建子进程失败");
-        return 1;
-    }
+pid_t pid = fork();
+if(pid==-1){
+FIXME("fork process error...\n");
+return 1;
+}
     //判断是否是子进程  
     if(pid==0){
-        // int ret=execl("/usr/bin/python","pyton","/home/wanlei/Desktop/test.py",NULL);
-        puts("I'm child");
-        execl("/usr/bin/python","pyton","/home/wanlei/Desktop/test.py",NULL);
-
-        puts("sleep 5s ...");
-        sleep(5);
-        puts("sleep end");
-
-        printf("子进程PID是%d\n", getpid());
-        printf("父进程PID是%d\n", getppid());
-
+        int ret=execl(NULL,"pyton","/home/wanlei/Desktop/test.py",NULL);
+        if(ret==1){
+            FIXME("create kill txupd process error...");
+        }
         return 0;
+        
     }
     else{
         puts("I'm parent");

@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "pthread.h"
+
 static int search(char*s,char*t)
 {	
 int size_t=strlen(t),size_s=strlen(s),T,i,j;
@@ -28,13 +30,25 @@ else
 return 1;
 }
 
+void *test_fun(void* arg){
+    system("sleep 5");
+    printf("zz");
+    return NULL;
+}
 int main(){
-    char *s = "./drive_c/users/dev/Application Data/Tencent/QQ/AuTemp/2653170047/NewUpd/txupd.exe";
-    char *p="tdxupd.exe";
-    int res=search(s,p);
-    printf("%d\n",res);
-    system("python ");
+    
+    pthread_t ntid;
+    int err=pthread_create(&ntid,NULL,test_fun,NULL);
+    if(err!=0){
+        printf("create thread error...");
+    }
+    // pthread_join(ntid,NULL);
+    printf("hello world!");
+    
+    while(1){
+        system("sleep 1");
+    }
     return 0;
 }
 
-TRACE("%p CtlID=%u lpnmh->code=%x\n",This,CtlID,lpnmh->code);
+// TRACE("%p CtlID=%u lpnmh->code=%x\n",This,CtlID,lpnmh->code);

@@ -3,6 +3,8 @@
 #include <string.h>
 
 #include "pthread.h"
+#include "unistd.h"
+#include "sys/types.h"
 
 static int search(char*s,char*t)
 {	
@@ -31,23 +33,43 @@ return 1;
 }
 
 void *test_fun(void* arg){
-    system("sleep 5");
-    printf("zz");
+    system("/home/dev/qq8/detect_txupd.py");
     return NULL;
 }
 int main(){
-    
-    pthread_t ntid;
-    int err=pthread_create(&ntid,NULL,test_fun,NULL);
-    if(err!=0){
-        printf("create thread error...");
+    //创建子进程
+    pid_t pid = fork();
+    if(pid==-1){
+        FIXME("创建子进程失败");
+        return 1;
     }
-    // pthread_join(ntid,NULL);
-    printf("hello world!");
-    
-    while(1){
-        system("sleep 1");
+    //判断是否是子进程  
+    if(pid==0){
+        // int ret=execl("/usr/bin/python","pyton","/home/wanlei/Desktop/test.py",NULL);
+        puts("I'm child");
+        execl("/usr/bin/python","pyton","/home/wanlei/Desktop/test.py",NULL);
+
+        puts("sleep 5s ...");
+        sleep(5);
+        puts("sleep end");
+
+        printf("子进程PID是%d\n", getpid());
+        printf("父进程PID是%d\n", getppid());
+
+        return 0;
     }
+    else{
+        puts("I'm parent");
+
+        printf("子进程PID是%d\n", pid);
+        printf("父进程PID是%d\n", getpid());
+        system("sleep 20");
+    }
+    
+    
+    
+    
+    printf("hello\n");
     return 0;
 }
 

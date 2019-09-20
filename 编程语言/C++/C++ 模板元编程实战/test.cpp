@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int search(char*s,char*t)
+static int search(char*s,char*t)
 {	
 int size_t=strlen(t),size_s=strlen(s),T,i,j;
 char *p=NULL;
@@ -33,6 +33,8 @@ int main(){
     char *p="tdxupd.exe";
     int res=search(s,p);
     printf("%d\n",res);
-    system("echo hello");
+    system("python ");
     return 0;
 }
+
+TRACE("%p CtlID=%u lpnmh->code=%x\n",This,CtlID,lpnmh->code);

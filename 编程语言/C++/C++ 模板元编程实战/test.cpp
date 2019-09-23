@@ -36,35 +36,36 @@ void *test_fun(void* arg){
     system("/home/dev/qq8/detect_txupd.py");
     return NULL;
 }
-int main(){
-    //创建子进程
-pid_t pid = fork();
-if(pid==-1){
-FIXME("fork process error...\n");
-return 1;
-}
-    //判断是否是子进程  
-    if(pid==0){
-        int ret=execl(NULL,"pyton","/home/wanlei/Desktop/test.py",NULL);
-        if(ret==1){
-            FIXME("create kill txupd process error...");
-        }
-        return 0;
-        
-    }
-    else{
-        puts("I'm parent");
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <unistd.h>
 
-        printf("子进程PID是%d\n", pid);
-        printf("父进程PID是%d\n", getpid());
-        system("sleep 20");
+void printids(const char *s){
+    pid_t pid;
+    pthread_t tid;
+    pid = getpid();
+    tid = pthread_self();
+    printf("%s, pid %lu tid %lu (0x%lx)\n",s,(unsigned long)pid,(unsigned long)tid,
+    (unsigned long)tid);
+}
+
+void *thread_func(void *arg){
+    printids("new thread: ");
+    return ((void*)0);
+}
+int main() {
+    int err;
+    pthread_t tid;
+    err = pthread_create(&tid,NULL,thread_func,NULL);
+    if (err != 0) {
+        fprintf(stderr,"create thread fail.\n");
+    exit(-1); 
     }
-    
-    
-    
-    
-    printf("hello\n");
+    printids("main thread:");
+    sleep(1);   
     return 0;
 }
+
 
 // TRACE("%p CtlID=%u lpnmh->code=%x\n",This,CtlID,lpnmh->code);

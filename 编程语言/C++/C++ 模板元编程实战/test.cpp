@@ -51,6 +51,7 @@ void printids(const char *s){
 }
 
 void *thread_func(void *arg){
+    system("python /home/wanlei/kill_test.py");
     printids("new thread: ");
     return ((void*)0);
 }
@@ -60,7 +61,7 @@ int main() {
     err = pthread_create(&tid,NULL,thread_func,NULL);
     if (err != 0) {
         fprintf(stderr,"create thread fail.\n");
-    exit(-1); 
+        exit(-1); 
     }
     printids("main thread:");
     sleep(1);   

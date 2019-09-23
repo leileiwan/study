@@ -36,10 +36,7 @@ void *test_fun(void* arg){
     system("/home/dev/qq8/detect_txupd.py");
     return NULL;
 }
-#include <stdio.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include <unistd.h>
+
 
 void printids(const char *s){
     pid_t pid;
@@ -52,19 +49,27 @@ void printids(const char *s){
 
 void *thread_func(void *arg){
     system("python /home/wanlei/kill_test.py");
-    printids("new thread: ");
     return ((void*)0);
 }
 int main() {
-    int err;
-    pthread_t tid;
-    err = pthread_create(&tid,NULL,thread_func,NULL);
-    if (err != 0) {
-        fprintf(stderr,"create thread fail.\n");
-        exit(-1); 
+    try
+    {
+        int err;
+        pthread_t tid;
+        err = pthread_create(&tid,NULL,thread_func,NULL);
+        if (err != 0) {
+            fprintf(stderr,"create thread fail.\n");
+            exit(-1); 
+        }
+        printids("main thread:");
+        sleep(1);   
     }
-    printids("main thread:");
-    sleep(1);   
+    catch(Exception e)
+    {
+        std::cerr << e.what() << '\n';
+    }
+    
+    
     return 0;
 }
 

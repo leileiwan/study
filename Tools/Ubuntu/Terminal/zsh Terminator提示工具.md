@@ -8,6 +8,7 @@ zsh 能满足我们的基本要求。
 * https://github.com/zsh-users/zsh-autosuggestions/blob/master/INSTALL.md
 
 ## 2.1 安装zsh并设置主题
+* sudo apt-get install fonts-powerline 安装字体
 * sh -c "$(wget -O- https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 * vim ~/.zshrc 
   设置ZSH_THEME="agnoster" (设置主题)

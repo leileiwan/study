@@ -4,7 +4,9 @@
 - [2. Tools](#2-tools)
 - [3. 技术栈](#3-技术栈)
     - [3.1 Prometheus、Kubernetes](#31-prometheuskubernetes)
-    - [3.2 研究生期间重点工作内容【OS、分布式系统、C++语言】](#32-研究生期间重点工作内容os分布式系统c语言)
+    - [3.2 linxu kernel](#32-linxu-kernel)
+    - [3.3 虚拟化](#33-虚拟化)
+    - [3.4 分布式](#34-分布式)
 
 <!-- /TOC -->
 # 1. 背景
@@ -34,11 +36,30 @@
 * Kubernetes
     * Kubernetes简单使用手册基本阅读完毕，参见Kubernetes指南
     * 针对人工智能容器训练定制CRD和Controller，容器云训练的核心节点，稳定新还不错（写过脚本验证，0.5s内频繁create delete 不会出现问题）。并发处理性能有待验证（没有大规模资源验证）。
-    * client-go源码初略阅读完毕。
+    * client-go源码初略阅读
+        * scheme 使用，不是源码分析
+        * wrokqueue 源码分析
+        * informer 源码分析
 * Prometheus-Operator
     * Prometheus Operator 源码阅读完毕。
-## 3.2 研究生期间重点工作内容【OS、分布式系统、C++语言】
-* Linux内核设计艺术【2019.08.10--2019.09.08】
+* kubeflow
+    * gitops 理解
+    * jupyter doc 阅读
+    * pipelines doc 阅读
+    * Fairing doc 阅读
+    * kubeflow 部署
+    * Pytorch opeartor
+        * Pytorch-Opeartor 复现训练过程
+        * 手动编译Pytorch-Opeartor 源码，执行训练过程
+        * [进行中]Pytorch-Operator源码阅读
+* kubebatch
+    * kube-batch doc 简介和不熟
+    * kube-batch doc 概念和原理
+    * kube-batch doc 调度过程
+    * kube-batch doc Reclaim 过程
+
+## 3.2 linxu kernel
+* Linux内核设计艺术
     * 一章：计算机加电到第一次执行Cmain函数
     * 二章：创建0号进程(怠速进程)
     * 三章：创建1号进程(init进程)
@@ -50,8 +71,17 @@
     * 九章：操作系统设计的指导思想
 
 
-* Linux kernel 0.11 源码阅读和编译修改【跟进中】
+## 3.3 虚拟化
+* 系统虚拟化(source haiwei)
+    * 1. 系统虚拟化简介
+    * 2. x86操作系统架构
+    * 3. 系统虚拟化方案
+* 其它blog
+    * 【经典】虚拟机在线迁移技术实现
+    * 主流虚拟化技术种类和却别
 
-* 分布式系统 MIT 6.824[2019.09.10--至今]
+## 3.4 分布式
+* 分布式系统 MIT 6.824
     * MapReduce 
     * GFS
+

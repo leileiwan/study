@@ -1,8 +1,18 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
+
 
 func main() {
-	a := 1+2
-	fmt.Println(a)
+	var res string
+	for i:=0;i<len(os.Args);i++{
+		res+=os.Args[i]
+	}
+	fmt.Println(res)
+	
 }
+
+

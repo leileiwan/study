@@ -1,6 +1,6 @@
 QQ更新崩溃原因分析和修复
 # 1. 问题描述
-* 点击更新之后，有时候能正常阻止QQ更新，有时候Wine 会弹出异常的状态，异常描述如下
+* 点击更新之后，有时候能正常阻止QQ更新，有时候Wine 会弹出异常的状态，txupd进程会出现，但是不执行更新操作
 * 机器重启后的出现崩溃几率比较大，一段时间后很难再出现崩溃界面
 # 1.1 核心代码如下
 * 红色部分是修复后的代码
@@ -25,10 +25,23 @@ QQ更新崩溃原因分析和修复
 * 将T用0初始化
 * 结果，果然多次执行，每次都出现崩溃的界面。同时，return 0操作并没有被执行。
 
-## 3.2 解决方法
+## 3.2 sei_tmp.lpFile 是什么类型数据
+* 打印sei_tmp.lpFile，输出的是一个字符，说明不是char * 类型数据\
+    * 参考定义，sei_tmp.lpFile 类型是wchar_t *，debugstr_w返回的是const char *
+```
+static inline const char *debugstr_w( const WCHAR *s ) { return wine_dbgstr_wn( s, -1 ); }
+
+typedef wchar_t         WCHAR,      *PWCHAR;
+```
+
+
+## 3.3 解决方法
 * 首先打印sei_tmp.lpFile，输出的是一个字符，所以search for循环不会执行
 * 然后打印debugstr_w(sei_tmp.lpFile)输出的是文件路径
 * 传入serach的参数都经过debugstr_w()函数处理
 * 结果，QQ不进行更新，return 0操作正常执行
 
 以上可以验证猜想2是正确的
+
+#4 修改后的代码
+* 参考1.1 中截图红色部分

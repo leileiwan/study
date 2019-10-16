@@ -12,6 +12,8 @@ func main() {
 		res+=os.Args[i]
 	}
 	fmt.Println(res)
+	fmt.Println("zzz")
+	
 	
 }
 

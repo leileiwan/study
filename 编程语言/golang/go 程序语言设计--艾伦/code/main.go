@@ -7,9 +7,8 @@ import (
 
 func main() {
 	var res string
-	for i := 0; i < len(os.Args); i++ {
-		res += os.Args[i]
+	for _, tem := range os.Args[1:] {
+		res = res + " " + tem
 	}
 	fmt.Println(res)
-	fmt.Println("zzz")
 }

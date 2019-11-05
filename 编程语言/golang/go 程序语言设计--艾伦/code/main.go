@@ -1,14 +1,25 @@
 package main
 
-import (
-	"fmt"
-	"os"
-)
+import "fmt"
 
 func main() {
-	var res string
-	for _, tem := range os.Args[1:] {
-		res = res + " " + tem
+
+	switch {
+	case false:
+		fmt.Println("The integer was <= 4")
+		fallthrough
+	case true:
+		fmt.Println("The integer was <= 5")
+		fallthrough
+	case false:
+		fmt.Println("The integer was <= 6")
+		fallthrough
+	case true:
+		fmt.Println("The integer was <= 7")
+	case true:
+		fmt.Println("The integer was <= 8")
+
+	default:
+		fmt.Println("default case")
 	}
-	fmt.Println(res)
 }

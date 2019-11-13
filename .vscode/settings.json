@@ -33,7 +33,7 @@
 
 
 {
-    "workbench.colorTheme": "Visual Studio Dark",
+    "workbench.colorTheme": "Visual Studio Light",
     "files.autoSave": "onFocusChange",
     "go.buildOnSave": "off",
     "go.lintOnSave" :"off",

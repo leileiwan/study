@@ -30,7 +30,20 @@
 
 # 3. 研究内容
 ## 3.1 批量调度
+kubernetes 主要是解决无状态微服务的，对多GPU有状态任务支持并不友善。kubernetes默认调度策略是，不管任务请求多少个GPU，先尽可能占用GPU，如果资源不满足就阻塞，并且不会主动释放资源。这样一定会出现大任务阻塞小任务、资源死锁等问题。比如任务A需要4个GPU、任务B需要2个GPU、集群中还剩2个GPU，理想状态是任务B被调度，任务A阻塞，但是实际是任务A先占用2个GPU，任务A和B均阻塞。
 
+批量调度是指，当集群中GPU资源满足任务请求数量时，该任务才被分配资源。达到的效果就是要么请求资源全部被满足，要么一个也不满足。
+
+该需求开源项目kube-batch基本可以满足，但是该项目关于饥饿的解决还在争论中。
+
+## 3.2 拓扑结构
+* GPU 可以说对拓扑链路非常敏感，通常的链路通道包括网络、CPU、PCI SWitch、Nvlink等。
+
+如下图所示，不同的拓扑结构对通信的速率有着重要影响，抛最后两项nvidia推出的产品，传统的PCI SWitch通道速度也是QPI通道的2.4倍。任务调度到合理的节点有利于提高GPU任务性能。（参考chrome-extension://cdonnmffkdaoajfknoeeecmchibpmkmg/assets/pdf/web/viewer.html?file=http%3A%2F%2Fon-demand.gputechconf.com%2Fgtc%2F2018%2Fpresentation%2Fs8462-multi-gpu-training-with-nccl.pdf）
+![](2019-11-20-11-29-03.png)
+
+## 3.3 弹性调度
+云有很多特点，最重要的有高性能、高可用、
 # 4. 研究价值
 # 5. 目前现状
 # 6. 实现路线

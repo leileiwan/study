@@ -47,5 +47,8 @@
     "go.formatTool": "goreturns",
     "go.goroot": "/usr/local/go",
     "go.gopath": "/home/wanlei/go",
-    "go.gocodeAutoBuild": false
+    "go.gocodeAutoBuild": false,
+    "pasteImage.path": "${currentFileDir}/images",
+    "pasteImage.prefix": "./",
+    "files.eol": "\r\n"
 }

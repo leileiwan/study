@@ -1,9 +1,9 @@
 package main
 
 import "fmt"
+import "./T/p"
 
 func main() {
-	var a map[string]int
-	delete(a, "alice")
+	var =p.T
 	fmt.Printf("v%", a)
 }

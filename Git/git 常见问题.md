@@ -27,3 +27,6 @@ if return You've successfully authenticated,But GitHUb does not provice shell ac
     git push https://github.com/owner/repo.git
     git config --global credential.helper 'cache --timeout 7200'(the cache timeout is 7200 seconds)
     ```
+
+# 3. 怎样算contribution
+

@@ -11,3 +11,18 @@ https://www.cnblogs.com/lixuwu/p/5726018.html
 https://blog.csdn.net/u014561933/article/details/79958017
 
 https://www.youtube.com/watch?v=wD0OEDEqjfE
+
+
+
+* cuda：
+https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html
+
+https://developer.nvidia.com/cuda-toolkit-archive
+
+https://www.nvidia.com/Download/Find.aspx
+
+
+`sudo dpkg -i cuda-repo-ubuntu1604_9.0.176-1_amd64.deb`
+`sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub`
+`sudo apt-get update`
+`sudo apt-get install cuda`

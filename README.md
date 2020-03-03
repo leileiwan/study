@@ -85,12 +85,3 @@
     * MapReduce 
     * GFS
 
-
-
-
-PodGroup controller，
-queue controller，（queue状态转化、webhook,ladp接进来，一个用户组定义）
-三级部门控制.
-
-workflow
-pytroch-operator 优先级、抢占

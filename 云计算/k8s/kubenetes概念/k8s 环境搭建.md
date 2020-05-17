@@ -1,182 +1,745 @@
-## 一、搭建基础环境平台，下载安装包：http://gitlab.bj.sensetime.com/platform/SuperComputer/kube-baremetal
+<!-- TOC -->
 
-1、关闭防火墙、networkmanager、selinux置为disabled
+- [1. 背景](#1-背景)
+    - [1.1 系统环境](#11-系统环境)
+- [2. 搭建过程](#2-搭建过程)
+    - [2.1 物理节点配置（不区分物理机和虚拟机）](#21-物理节点配置不区分物理机和虚拟机)
+        - [2.1.1 关闭防火墙](#211-关闭防火墙)
+        - [2.1.2 关闭SELinux](#212-关闭selinux)
+        - [2.1.3 关闭Swap](#213-关闭swap)
+        - [2.1.4 配置hostname](#214-配置hostname)
+        - [2.1.5 配置免密](#215-配置免密)
+        - [2.1.5 设置内核参数](#215-设置内核参数)
+        - [2.1.6 安装docker](#216-安装docker)
+    - [2.2 安装Kubernetes](#22-安装kubernetes)
+        - [2.2.1 设置Kubernetes Yaml 源](#221-设置kubernetes-yaml-源)
+        - [2.2.2 安装Kubernetes指定版本](#222-安装kubernetes指定版本)
+        - [2.2.3 拉取镜像](#223-拉取镜像)
+        - [2.2.4 启动kubelet并设置为服务](#224-启动kubelet并设置为服务)
+        - [2.2.5 初始化k8s master 节点](#225-初始化k8s-master-节点)
+        - [2.2.6 添加node节点](#226-添加node节点)
+        - [2.2.7 配置kubectl](#227-配置kubectl)
+        - [2.2.3 配置网络](#223-配置网络)
+- [3. 安装校验](#3-安装校验)
 
-2、所以K8S节点关闭swap（搭建k8s集群基本配置）
+<!-- /TOC -->
 
-注释掉 /etc/fstab中 swap一行，然后重启服务器，永久关闭。
+# 1. 背景
+一直认为边看文档边实操是入门项目最快的方式，至于熟悉这个项目就得阅读源码。
+Kubernetes 安装在不同环境还是有不同差异，由于国内网络限制，按照Kubernetes官网会遇到一些问题。根据遇到的问题，本人列出成功搭建Kubernetes环境过程。
 
-（swapoff -a 立刻关闭swap，重启后失效。）
+## 1.1 系统环境
+* 系统: centos7.5
+* 系统参数: 4核 8G 100T磁盘
+* Docker版本：1.18.3
+* Kubernetes版本：1.13.3
+* 主机信息
 
-3、修改 hosts文件(修改的是安装包的host文件)
-
-[baremetals]
-10.121.2.122
-10.121.2.123
-10.121.2.125
-10.121.2.126
-
-4、执行ansible-playbook -i hosts deploy.yml
-
-## 二、部署K8S
-
+主机名|IP|角色
+-|-|-
+K8s-master |10.0.220.15 |K8s主节点
+K8s-node01 |10.0.220.65 |K8s从节点01
+K8s-node02 |10.0.220.111|K8s从节点02
 
 
-找台宿主机如你的PC，或者一台服务器，把下载好的离线包拷贝到/data目录
+# 2. 搭建过程
+## 2.1 物理节点配置（不区分物理机和虚拟机）
+### 2.1.1 关闭防火墙
+关于防火墙的原因（nftables后端兼容性问题，产生重复的防火墙规则）
+```
+The iptables tooling can act as a compatibility layer, behaving like iptables but actually configuring nftables. This nftables backend is not compatible with the current kubeadm packages: it causes duplicated firewall rules and breakskube-proxy.
+```
+```
+所有节点都执行命令：
+systemctl disable firewalld.service 
+systemctl disable firewalld.service 
+```
+### 2.1.2 关闭SELinux
+Selinux是一套白名单机制，为了安全对服务、文件、端口设置都有严格的限制，除非对selinux非常熟，一般都是关掉selinux。
 
-对宿主机与待安装节点启动docker服务
+关于k8s关闭selinux的原因（关闭selinux以允许容器访问宿主机的文件系统）
+```
+Setting SELinux in permissive mode by runningsetenforce 0andsed ...effectively disables it. This is required to allow containers to access the host filesystem, which is needed by pod networks for example. You have to do this until SELinux support is improved in the kubelet.
+```
+```
+所有节点都执行命令：
+setenforce 0
 
+vi /etc/selinux/config
+SELINUX=disabled
+```
+### 2.1.3 关闭Swap
+k8s 目前必须关闭swap，主要是因为社区提出的issue: https://github.com/kubernetes/kubernetes/issues/53533
+
+本人总结原因是当物理节点内存耗尽时，kubelet 组件无法handle memory eviction。
+```
+所有节点都执行命令：
+swapoff -a
+```
+
+### 2.1.4 配置hostname
+为了用户方便知道物理节点角色，我们为设置静态hostname。
+```
+三个节点分别执行以下三条命令：
+hostnamectl --static set-hostname  k8s-master
+hostnamectl --static set-hostname  k8s-node01
+hostnamectl --static set-hostname  k8s-node02
+```
+
+设置hosts文件
+```
+三个节点都添加同样的hosts内容：
+10.0.220.15 k8s-master
+10.0.220.65 k8s-node01
+10.0.220.111 k8s-node02
+```
+
+### 2.1.5 配置免密
+三个节点相互配置免密（原因在文档中还未找到）
+过程不赘述，网上文档很多。
+
+### 2.1.5 设置内核参数
+将桥接的IPv4流量传递到iptables的链
+```
+所有节点都执行命令：
+[root@k8s-master ~]# cat <<EOF > /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
+EOF
+
+sysctl –-system
+```
+
+### 2.1.6 安装docker
+设置yum源
+```
+三个节点都执行：
+cd /etc/yum.repos.d/
+wget https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+```
+
+安装指定docker版本
+```
+三个节点都执行：
+yum -y install docker-ce-18.06.1.ce-3.el7
+```
+
+将docker进程设置为服务
+```
+三个节点都执行：
+systemctl enable docker 
 systemctl start docker
-
-启动sealos容器，把离线包挂载进去：
-
-docker run --rm -v /data/kube1.12.2.tar.gz:/data/kube1.12.2.tar.gz -it -w /etc/ansible fanux/sealos:v1.12.0-beta bash
-
-配置免密访问
-
-在宿主机执行
-
-mkdir ~/.ssh
-cd ~/.ssh
-ssh-keygen -t rsa
-cat ~/.ssh/id_rsa.pub
-
-容器密码是12345678
-
-在待安装节点执行：
-
-echo '上述命令的公钥' >>~/.ssh/authorized_keys
-
-这样公钥分发工作完成了，所有的机器直接ssh无需输入密码即可登录
-
-在宿主机执行：
-
-yum -y install vim
-vim /etc/ansible/hosts
 ```
 
-[k8s-master]
-10.121.2.122 name=node01 order=1 role=master lb=MASTER lbname=lbmaster priority=100
-10.121.2.123 name=node02 order=2 role=master lb=BACKUP lbname=lbbackup priority=80
-#10.1.86.203 name=node03  order=3
-10.121.2.125 name=node03 order=3 role=master
- 
-[k8s-node]
-10.121.2.126 name=node04 role=node
- 
-[k8s-all:children]
-k8s-master
-k8s-node
- 
-[all:vars]
-vip=10.121.2.186
-k8s_version=1.12.2
-ip_interface=eth0  #确保每个主机都有eth0,不同主机之间docker可通信
-etcd_crts=["ca-key.pem","ca.pem","client-key.pem","client.pem","member1-key.pem","member1.pem","server-key.pem","server.pem","ca.csr","client.csr","member1.csr","server.csr"]
-k8s_crts=["apiserver.crt","apiserver-kubelet-client.crt","ca.crt", "front-proxy-ca.key","front-proxy-client.key","sa.pub", "apiserver.key","apiserver-kubelet-client.key",  "ca.key",  "front-proxy-ca.crt",  "front-proxy-client.crt" , "sa.key"]
+查看docker版本
+```
+三个节点都执行：
+docker --version
 ```
 
-注意role=master的会装etcd与kubernetes控制节点，role=node即k8s node节点，配置比较简单，除了改IP和版本，其它基本不用动。
-
-
-
-启动安装
+## 2.2 安装Kubernetes
+### 2.2.1 设置Kubernetes Yaml 源
 ```
- ansible-playbook roles/install-all.yaml
-```
+三个节点都执行：(写文件)
+cat /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
 
+name=Kubernetes
 
+baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
 
-补充nv device支持
+enabled=1
 
-```
-kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.12/nvidia-device-plugin.yml
-```
+gpgcheck=1
 
+repo_gpgcheck=1
 
-修改master节点taints：
-
-```
-kubectl taint nodes --all node-role.kubernetes.io/master-
+gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
 ```
 
-
-
-
-
-
-
-uninstall all
+### 2.2.2 安装Kubernetes指定版本
+本文采用1.13.3版本
 ```
-ansible-playbook roles/uninstall-all.yaml
+三个节点都执行：
+yum install -y kubelet-1.13.3 kubeadm-1.13.3 kubectl-1.13.3 kubernetes-cni-0.6.0-0
 ```
 
-
-
-删除nvidia-device-plugin
-
+### 2.2.3 拉取镜像
+Kubernetes 系统本身有很多镜像，由于网络限制，本人找的镜像基本都是国内的。
 ```
-kubectl delete -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.12/nvidia-device-plugin.yml
+docker pull mirrorgooglecontainers/kube-apiserver:v1.13.3
+docker pull mirrorgooglecontainers/kube-controller-manager:v1.13.3
+docker pull mirrorgooglecontainers/kube-scheduler:v1.13.3
+docker pull mirrorgooglecontainers/kube-proxy:v1.13.3
+docker pull mirrorgooglecontainers/pause:3.1
+docker pull mirrorgooglecontainers/etcd:3.2.24
+docker pull coredns/coredns:1.2.6
+docker pull registry.cn-shenzhen.aliyuncs.com/cp_m/flannel:v0.10.0-amd64
+
+docker tag mirrorgooglecontainers/kube-apiserver:v1.13.3 k8s.gcr.io/kube-apiserver:v1.13.3
+docker tag mirrorgooglecontainers/kube-controller-manager:v1.13.3 k8s.gcr.io/kube-controller-manager:v1.13.3
+docker tag mirrorgooglecontainers/kube-scheduler:v1.13.3 k8s.gcr.io/kube-scheduler:v1.13.3
+docker tag mirrorgooglecontainers/kube-proxy:v1.13.3 k8s.gcr.io/kube-proxy:v1.13.3
+docker tag mirrorgooglecontainers/pause:3.1 k8s.gcr.io/pause:3.1
+docker tag mirrorgooglecontainers/etcd:3.2.24 k8s.gcr.io/etcd:3.2.24
+docker tag coredns/coredns:1.2.6 k8s.gcr.io/coredns:1.2.6
+docker tag registry.cn-shenzhen.aliyuncs.com/cp_m/flannel:v0.10.0-amd64 quay.io/coreos/flannel:v0.10.0-amd64
+
+docker rmi mirrorgooglecontainers/kube-apiserver:v1.13.3           
+docker rmi mirrorgooglecontainers/kube-controller-manager:v1.13.3  
+docker rmi mirrorgooglecontainers/kube-scheduler:v1.13.3           
+docker rmi mirrorgooglecontainers/kube-proxy:v1.13.3               
+docker rmi mirrorgooglecontainers/pause:3.1                        
+docker rmi mirrorgooglecontainers/etcd:3.2.24                      
+docker rmi coredns/coredns:1.2.6
+docker rmi registry.cn-shenzhen.aliyuncs.com/cp_m/flannel:v0.10.0-amd64
+t
 ```
 
+### 2.2.4 启动kubelet并设置为服务
+```
+* 三个节点都执行：
+systemctl enable kubelet
+systemctl start kubelet
+```
 
+### 2.2.5 初始化k8s master 节点
+```
+在master节点上执行：
+kubeadm init --kubernetes-version=v1.13.3 --apiserver-advertise-address 10.0.220.15 --pod-network-cidr=10.244.0.0/16
+```
+* --apiserver-advertise-address：指定用 Master 的哪个IP地址与 Cluster的其他节点通信（一定要对应好master 节点IP地址）
+* --service-cidr：指定Service网络的范围，即负载均衡VIP使用的IP地址段
+* --pod-network-cidr：指定Pod网络的范围，即Pod的IP地址段
+* --image-repository：Kubenetes默认Registries地址是 k8s.gcr.io，在国内并不能访问 gcr.io，在1.13版本中我们可以增加-image-repository参数，默认值是 k8s.gcr.io，将其指定为阿里云镜像地址：registry.aliyuncs.com/google_containers。
+* --kubernetes-version=v1.13.3：指定要安装的版本号。
+* --ignore-preflight-errors=：忽略运行时的错误，例如上面目前存在[ERROR NumCPU]和[ERROR Swap]，忽略这两个报错就是增加--ignore-preflight-errors=NumCPU 和--ignore-preflight-errors=Swap的配置即可。
 
-在线增加节点：
+初始化的结果：
+```
+Your Kubernetes master has initialized successfully!
 
-1、先安装 kube-bin nvidia-docker docker 环境 ，见第一步：“1. 搭建基础环境，docker/nvidia-docker/kube-bin ”
+To start using your cluster, you need to run the following as a regular user:
 
-2、见第二步：修改hosts文件，master节点不动，旧的node节点删除，新的node节点添加，然后执行下面的命令。注意，playbook变了。
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
-ansible-playbook roles/install-kubenode.yaml
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
 
-参考：
+You can now join any number of machines by running the following on each node
+as root:
 
-![title](../.local/static/2019/3/3/1554281049118.1554281049121.png)
+  kubeadm join 10.0.220.15:6443 --token i8nxlt.ox0bzax19jak1tyq --discovery-token-ca-cert-hash sha256:02e8fd59a30c53e792f5f822409762bfab5aef329fd24c48f994a20f752c5738
+```
 
+### 2.2.6 添加node节点
+按照上面提示，我们添加node节点：
+```
+两个node节点都执行：
+kubeadm join 10.0.220.15:6443 --token i8nxlt.ox0bzax19jak1tyq --discovery-token-ca-cert-hash sha256:02e8fd59a30c53e792f5f822409762bfab5aef329fd24c48f994a20f752c5738
+```
 
+### 2.2.7 配置kubectl
+kubectl是用户常用的工具，使用kubectl需要有apiserver权限，我们执行下面命令
+```
+master节点执行：
+echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> /etc/profile
+source /etc/profile 
+echo $KUBECONFIG
+```
 
-在线删除节点：
+### 2.2.3 配置网络
+kubernetes 通信有很多网络模型，常用的是cailco和flannel，下面我们选择flannel网络。
+```
+master 执行：
+kubectl apply -f kube-flannel.yaml
+```
+文件如下：kube-flannel.yaml
+```
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: flannel
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - nodes
+    verbs:
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - nodes/status
+    verbs:
+      - patch
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: flannel
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: flannel
+subjects:
+- kind: ServiceAccount
+  name: flannel
+  namespace: kube-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: flannel
+  namespace: kube-system
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: kube-flannel-cfg
+  namespace: kube-system
+  labels:
+    tier: node
+    app: flannel
+data:
+  cni-conf.json: |
+    {
+      "name": "cbr0",
+      "plugins": [
+        {
+          "type": "flannel",
+          "delegate": {
+            "hairpinMode": true,
+            "isDefaultGateway": true
+          }
+        },
+        {
+          "type": "portmap",
+          "capabilities": {
+            "portMappings": true
+          }
+        }
+      ]
+    }
+  net-conf.json: |
+    {
+      "Network": "10.244.0.0/16",
+      "Backend": {
+        "Type": "vxlan"
+      }
+    }
+---
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: kube-flannel-ds-amd64
+  namespace: kube-system
+  labels:
+    tier: node
+    app: flannel
+spec:
+  template:
+    metadata:
+      labels:
+        tier: node
+        app: flannel
+    spec:
+      hostNetwork: true
+      nodeSelector:
+        beta.kubernetes.io/arch: amd64
+      tolerations:
+      - operator: Exists
+        effect: NoSchedule
+      serviceAccountName: flannel
+      initContainers:
+      - name: install-cni
+        image: quay.io/coreos/flannel:v0.10.0-amd64
+        command:
+        - cp
+        args:
+        - -f
+        - /etc/kube-flannel/cni-conf.json
+        - /etc/cni/net.d/10-flannel.conflist
+        volumeMounts:
+        - name: cni
+          mountPath: /etc/cni/net.d
+        - name: flannel-cfg
+          mountPath: /etc/kube-flannel/
+      containers:
+      - name: kube-flannel
+        image: quay.io/coreos/flannel:v0.10.0-amd64
+        command:
+        - /opt/bin/flanneld
+        args:
+        - --ip-masq
+        - --kube-subnet-mgr
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "50Mi"
+          limits:
+            cpu: "100m"
+            memory: "50Mi"
+        securityContext:
+          privileged: true
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        volumeMounts:
+        - name: run
+          mountPath: /run
+        - name: flannel-cfg
+          mountPath: /etc/kube-flannel/
+      volumes:
+        - name: run
+          hostPath:
+            path: /run
+        - name: cni
+          hostPath:
+            path: /etc/cni/net.d
+        - name: flannel-cfg
+          configMap:
+            name: kube-flannel-cfg
+---
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: kube-flannel-ds-arm64
+  namespace: kube-system
+  labels:
+    tier: node
+    app: flannel
+spec:
+  template:
+    metadata:
+      labels:
+        tier: node
+        app: flannel
+    spec:
+      hostNetwork: true
+      nodeSelector:
+        beta.kubernetes.io/arch: arm64
+      tolerations:
+      - operator: Exists
+        effect: NoSchedule
+      serviceAccountName: flannel
+      initContainers:
+      - name: install-cni
+        image: quay.io/coreos/flannel:v0.10.0-arm64
+        command:
+        - cp
+        args:
+        - -f
+        - /etc/kube-flannel/cni-conf.json
+        - /etc/cni/net.d/10-flannel.conflist
+        volumeMounts:
+        - name: cni
+          mountPath: /etc/cni/net.d
+        - name: flannel-cfg
+          mountPath: /etc/kube-flannel/
+      containers:
+      - name: kube-flannel
+        image: quay.io/coreos/flannel:v0.10.0-arm64
+        command:
+        - /opt/bin/flanneld
+        args:
+        - --ip-masq
+        - --kube-subnet-mgr
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "50Mi"
+          limits:
+            cpu: "100m"
+            memory: "50Mi"
+        securityContext:
+          privileged: true
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        volumeMounts:
+        - name: run
+          mountPath: /run
+        - name: flannel-cfg
+          mountPath: /etc/kube-flannel/
+      volumes:
+        - name: run
+          hostPath:
+            path: /run
+        - name: cni
+          hostPath:
+            path: /etc/cni/net.d
+        - name: flannel-cfg
+          configMap:
+            name: kube-flannel-cfg
+---
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: kube-flannel-ds-arm
+  namespace: kube-system
+  labels:
+    tier: node
+    app: flannel
+spec:
+  template:
+    metadata:
+      labels:
+        tier: node
+        app: flannel
+    spec:
+      hostNetwork: true
+      nodeSelector:
+        beta.kubernetes.io/arch: arm
+      tolerations:
+      - operator: Exists
+        effect: NoSchedule
+      serviceAccountName: flannel
+      initContainers:
+      - name: install-cni
+        image: quay.io/coreos/flannel:v0.10.0-arm
+        command:
+        - cp
+        args:
+        - -f
+        - /etc/kube-flannel/cni-conf.json
+        - /etc/cni/net.d/10-flannel.conflist
+        volumeMounts:
+        - name: cni
+          mountPath: /etc/cni/net.d
+        - name: flannel-cfg
+          mountPath: /etc/kube-flannel/
+      containers:
+      - name: kube-flannel
+        image: quay.io/coreos/flannel:v0.10.0-arm
+        command:
+        - /opt/bin/flanneld
+        args:
+        - --ip-masq
+        - --kube-subnet-mgr
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "50Mi"
+          limits:
+            cpu: "100m"
+            memory: "50Mi"
+        securityContext:
+          privileged: true
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        volumeMounts:
+        - name: run
+          mountPath: /run
+        - name: flannel-cfg
+          mountPath: /etc/kube-flannel/
+      volumes:
+        - name: run
+          hostPath:
+            path: /run
+        - name: cni
+          hostPath:
+            path: /etc/cni/net.d
+        - name: flannel-cfg
+          configMap:
+            name: kube-flannel-cfg
+---
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: kube-flannel-ds-ppc64le
+  namespace: kube-system
+  labels:
+    tier: node
+    app: flannel
+spec:
+  template:
+    metadata:
+      labels:
+        tier: node
+        app: flannel
+    spec:
+      hostNetwork: true
+      nodeSelector:
+        beta.kubernetes.io/arch: ppc64le
+      tolerations:
+      - operator: Exists
+        effect: NoSchedule
+      serviceAccountName: flannel
+      initContainers:
+      - name: install-cni
+        image: quay.io/coreos/flannel:v0.10.0-ppc64le
+        command:
+        - cp
+        args:
+        - -f
+        - /etc/kube-flannel/cni-conf.json
+        - /etc/cni/net.d/10-flannel.conflist
+        volumeMounts:
+        - name: cni
+          mountPath: /etc/cni/net.d
+        - name: flannel-cfg
+          mountPath: /etc/kube-flannel/
+      containers:
+      - name: kube-flannel
+        image: quay.io/coreos/flannel:v0.10.0-ppc64le
+        command:
+        - /opt/bin/flanneld
+        args:
+        - --ip-masq
+        - --kube-subnet-mgr
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "50Mi"
+          limits:
+            cpu: "100m"
+            memory: "50Mi"
+        securityContext:
+          privileged: true
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        volumeMounts:
+        - name: run
+          mountPath: /run
+        - name: flannel-cfg
+          mountPath: /etc/kube-flannel/
+      volumes:
+        - name: run
+          hostPath:
+            path: /run
+        - name: cni
+          hostPath:
+            path: /etc/cni/net.d
+        - name: flannel-cfg
+          configMap:
+            name: kube-flannel-cfg
+---
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: kube-flannel-ds-s390x
+  namespace: kube-system
+  labels:
+    tier: node
+    app: flannel
+spec:
+  template:
+    metadata:
+      labels:
+        tier: node
+        app: flannel
+    spec:
+      hostNetwork: true
+      nodeSelector:
+        beta.kubernetes.io/arch: s390x
+      tolerations:
+      - operator: Exists
+        effect: NoSchedule
+      serviceAccountName: flannel
+      initContainers:
+      - name: install-cni
+        image: quay.io/coreos/flannel:v0.10.0-s390x
+        command:
+        - cp
+        args:
+        - -f
+        - /etc/kube-flannel/cni-conf.json
+        - /etc/cni/net.d/10-flannel.conflist
+        volumeMounts:
+        - name: cni
+          mountPath: /etc/cni/net.d
+        - name: flannel-cfg
+          mountPath: /etc/kube-flannel/
+      containers:
+      - name: kube-flannel
+        image: quay.io/coreos/flannel:v0.10.0-s390x
+        command:
+        - /opt/bin/flanneld
+        args:
+        - --ip-masq
+        - --kube-subnet-mgr
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "50Mi"
+          limits:
+            cpu: "100m"
+            memory: "50Mi"
+        securityContext:
+          privileged: true
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        volumeMounts:
+        - name: run
+          mountPath: /run
+        - name: flannel-cfg
+          mountPath: /etc/kube-flannel/
+      volumes:
+        - name: run
+          hostPath:
+            path: /run
+        - name: cni
+          hostPath:
+            path: /etc/cni/net.d
+        - name: flannel-cfg
+          configMap:
+            name: kube-flannel-cfg
+```
 
-在master节点执行：
+# 3. 安装校验
+查看pod
+```
+kubectl get pods --all-namespaces -o wide
+```
+![](./images/2020-05-10-23-53-53.png)
 
-kubectl delete node node名
-
-
-
-
-
-手动添加node
-
-1、在node节点执行：
-
-      kubeadm reset -f
-
-2、在master节点执行：
-
-      kubeadm token create --print-join-command #查看添加命令，将IP改为VIP
-
-![title](../.local/static/2019/3/3/1554281072431.1554281072432.png)
-
-3、在node节点执行上面得到的命令
-
-例子：kubeadm join 10.121.2.186:6443 --token 5ayxit.k352iobebq82cdns --discovery-token-ca-cert-hash sha256:e98e7c5e51c3235513ca7f34c3078d9dbf1165ed43c346479ab2e5120c5a986f
-
-4、将master节点的文件：/etc/kubernetes/pki/cfssl  拷贝到新添加的node节点，node节点的cfssl文件夹需要建
-
-       
-
-
-
-K8S基本命令：
-kubectl cluster-info 查看集群信息
-kubectl cluster-info dump 查看更详细信息
-kubectl get nodes 查看节点
-kubectl get rc,namespace 查看rc和namespace
-kubectl get pods,svc 查看pod和svc(和service一样)
-kubectl get -h 查看帮助
-kubectl create -f filename 创建文件内定义的resource
-kubectl replace -f filename 用于对已有资源进行更新、替换
-
-如果一个容器已经在运行，这时需要对一些容器属性进行修改，又不想删除容器，或不方便通过replace的方式进行更新。kubernetes还提供了一种在容器运行时，直接对容器进行修改的方式，就是patch命令。
-如前面创建pod的label是app=nginx-2，如果在运行过程中，需要把其label改为app=nginx-3。
-kubectl patch pod rc-nginx-2-kpiqt -p '{"metadata":{"labels":{"app":"nginx-3"}}}'
+查看node
+```
+kubectl get nodes
+```
+![](./images/2020-05-10-23-54-35.png)

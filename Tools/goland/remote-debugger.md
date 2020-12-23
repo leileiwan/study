@@ -1,4 +1,5 @@
 # goland 远程调试工具设置
+* 参考: https://www.jetbrains.com/help/go/attach-to-running-go-processes-with-debugger.html
 
 # 1. 核心步骤
 ## 1. 远程编译程序
@@ -34,4 +35,6 @@ API server listening at: [::]:8999
 
 # 2 特点
 * 每次运行都必须在远程启动dlv 服务
+
+
 
